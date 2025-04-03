@@ -1,0 +1,7 @@
+// Placeholder: Add tsconfig.build.json content for amm-contract.
+{
+  // "extends": "./tsconfig.json",
+  // "compilerOptions": { ... },
+  // "include": ["src/**/*"],
+  // "exclude": ["node_modules", "dist"]
+} // Example Structure 

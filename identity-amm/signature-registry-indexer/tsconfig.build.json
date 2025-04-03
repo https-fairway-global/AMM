@@ -1,0 +1,14 @@
+// Placeholder: Add tsconfig.build.json content based on the guide.
+{
+  // "extends": "./tsconfig.json",
+  // "compilerOptions": {
+  //   "outDir": "./dist",
+  //   "rootDir": "./src"
+  // },
+  // "references": [
+  //   { "path": "../signature-registry-api" },
+  //   { "path": "../signature-registry-contract" }
+  // ],
+  // "include": ["src/**/*"],
+  // "exclude": ["node_modules", "dist"]
+} // Example Structure 

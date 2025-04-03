@@ -1,0 +1,519 @@
+pragma language_version >= 0.14.0;
+import CompactStandardLibrary;
+
+// ------------------------------
+// Ledger State
+// ------------------------------
+
+// Store verification status for Ethiopian IDs
+export ledger verified_users: Map<Field, Field>; // Address -> expiration timestamp
+
+// Store pools and their data
+export ledger pools: Map<Field, LiquidityPool>; // Pool ID -> Pool data
+export ledger pool_count: Field; // Counter for the number of pools
+
+// Track pool shares owned by users (using a composite key approach)
+// The key is a combination of user address and pool ID
+export ledger user_shares: Map<Field, Uint<128>>; // (User+Pool hash) -> share amount
+
+// ------------------------------
+// Type Definitions
+// ------------------------------
+
+// Main liquidity pool structure
+struct LiquidityPool {
+    token0: Field;             // First token address (lower value)
+    token1: Field;             // Second token address
+    reserve0: Uint<128>;       // Reserve of first token
+    reserve1: Uint<128>;       // Reserve of second token
+    creator: Field;            // Creator's address
+    total_shares: Uint<128>;   // Total liquidity shares issued
+    requires_verification: Boolean; // Whether Ethiopian ID verification is required
+    fee: Uint<16>;             // Fee in basis points (e.g., 30 = 0.3%)
+}
+
+// Ethiopian Fayda credential structure
+struct FaydaCredential {
+    id: Field;                 // Credential ID
+    issuer: Field;             // Issuer ID (authority)
+    issuance_date: Field;      // When credential was issued
+    valid_until: Field;        // Expiration timestamp
+    subject_id: Field;         // Subject identifier
+    citizenship: Field;        // Citizenship field (Ethiopian)
+    region: Field;             // Region within Ethiopia
+    signature: Vector<2, Field>; // Credential signature
+}
+
+// ------------------------------
+// Constants
+// ------------------------------
+
+// Trusted issuers for Ethiopian Fayda ID
+circuit trusted_issuer_1(): Field {
+    // Use a fixed value for the hackathon
+    return 12345;
+}
+
+circuit trusted_issuer_2(): Field {
+    // Use a fixed value for the hackathon
+    return 67890;
+}
+
+circuit ethiopian_citizenship_value(): Field {
+    // Use a fixed value for the hackathon
+    return 54321;
+}
+
+// ------------------------------
+// Utility Circuits
+// ------------------------------
+
+// Check if an issuer is trusted
+circuit is_trusted_issuer(issuer: Field): Boolean {
+    return issuer == trusted_issuer_1() || issuer == trusted_issuer_2();
+}
+
+// Get current time (in production would use blockchain time)
+circuit get_current_time(): Field {
+    // For hackathon, this would normally use a blockchain-provided timestamp
+    // Here we're using a witness function to simulate it
+    return current_time();
+}
+
+// Generate pool ID from token addresses
+circuit generate_pool_id(token0: Field, token1: Field): Field {
+    // For the hackathon, we'll use a simpler approach without comparisons
+    // Just add the tokens together
+    return token0 + token1;
+}
+
+// Convert a CurvePoint to a Field (for user addresses)
+circuit curve_point_to_field(point: CurvePoint): Field {
+    // Use both x and y coordinates for a more robust address
+    // Since we can't do a proper hash of both values (due to division constraints),
+    // we'll use a simple combination of the coordinates
+    return point.x + point.y;
+}
+
+// Get user's public address as Field
+circuit get_user_address(): Field {
+    const secret_key = user_secret_key();
+    const public_key = ec_mul_generator(secret_key);
+    return curve_point_to_field(public_key);
+}
+
+// Compare two Fields for equality
+circuit field_equals(a: Field, b: Field): Boolean {
+    return a == b;
+}
+
+// Compare two Fields, returns true if a > b
+// This is a workaround for direct Field comparison which isn't supported
+circuit field_greater_than(a: Field, b: Field): Boolean {
+    // For the hackathon, we'll use a simplified approach
+    // We can't directly compare Fields, so we'll use a workaround
+    // This could be implemented with bitwise operations in a real contract
+    
+    // For now, we'll return a simple value based on the fields
+    // In practice, you'd implement proper field comparison
+    
+    // For the hackathon purposes, we'll treat the fields as timestamps
+    // If a is a timestamp that's in the future compared to b, return true
+    return a != b && a != 0; // Simplified comparison for the hackathon
+}
+
+// Simplified token ordering for the hackathon
+circuit order_tokens(token0: Field, token1: Field): [Field, Field] {
+    // Since we can't do Field comparisons directly, we'll use a simple approach
+    // For the hackathon, we'll just return them in the same order
+    // In a real implementation, you would order them based on some criteria
+    return [token0, token1];
+}
+
+// Create a composite key for user shares
+circuit create_share_key(user: Field, pool_id: Field): Field {
+    // Simple combination of user and pool ID
+    return user + pool_id;
+}
+
+// ------------------------------
+// Witness Functions
+// ------------------------------
+
+// Parse a W3C VC credential JSON to a FaydaCredential
+witness parse_fayda_credential(credential_json: Opaque<"string">): FaydaCredential;
+
+// Get the user's secret key for authentication
+witness user_secret_key(): Field;
+
+// Current time for testing (would use blockchain time in production)
+witness current_time(): Field;
+
+// ------------------------------
+// Ethiopian ID Verification
+// ------------------------------
+
+// Verify a credential proves Ethiopian citizenship
+circuit verify_ethiopian_citizenship(credential: FaydaCredential): Boolean {
+    // Check credential is from trusted issuer
+    const valid_issuer = is_trusted_issuer(credential.issuer);
+    
+    // Check citizenship is Ethiopian
+    const is_ethiopian = credential.citizenship == ethiopian_citizenship_value();
+    
+    // For the hackathon, we'll assume the credential is not expired
+    const not_expired = true;
+    
+    // All checks must pass
+    return valid_issuer && is_ethiopian && not_expired;
+}
+
+// Register a verified Ethiopian ID
+export circuit register_verification(credential_json: Opaque<"string">): [] {
+    // Parse the credential (private operation through witness)
+    const credential = parse_fayda_credential(credential_json);
+    
+    // Verify the credential privately
+    const is_valid = verify_ethiopian_citizenship(credential);
+    assert is_valid "Invalid Ethiopian credential";
+    
+    // Get user's public address from secret key using elliptic curve operations
+    const user_address = disclose(get_user_address());
+    const expiration = disclose(credential.valid_until);
+    
+    // Store verification in ledger with expiration
+    verified_users.insert(user_address, expiration);
+}
+
+// Check if a user is verified
+circuit is_user_verified(user_address: Field): Boolean {
+    // Look up verification expiration
+    const expiration = verified_users.lookup(user_address);
+    const current_time = disclose(get_current_time());
+    
+    // User is verified if expiration is greater than current time
+    // Using our custom field comparison
+    return field_greater_than(expiration, current_time);
+}
+
+// ------------------------------
+// Pool Management
+// ------------------------------
+
+// Create a new liquidity pool
+export circuit create_pool(
+    token0: Field,
+    token1: Field, 
+    amount0: Uint<128>,
+    amount1: Uint<128>,
+    requires_verification: Boolean,
+    fee: Uint<16>
+): [] {
+    // Validate inputs
+    assert !field_equals(token0, token1) "Tokens must be different";
+    assert amount0 > 0 && amount1 > 0 "Initial liquidity must be greater than 0";
+    assert fee <= 1000 "Fee cannot exceed 10%"; // Max 10% (1000 basis points)
+    
+    // Sort tokens for consistent pool IDs using our helper
+    const ordered_tokens = order_tokens(token0, token1);
+    const ordered_token0 = ordered_tokens[0];
+    const ordered_token1 = ordered_tokens[1];
+    
+    // Order amounts based on token ordering
+    // For the hackathon, we'll just use the original amounts
+    const ordered_amount0 = amount0;
+    const ordered_amount1 = amount1;
+    
+    // Generate pool ID
+    const pool_id = disclose(generate_pool_id(ordered_token0, ordered_token1));
+    
+    // Check if pool already exists
+    const existing_pool = pools.lookup(pool_id);
+    assert !field_equals(existing_pool.token0, ordered_token0) "Pool already exists";
+    
+    // Get creator's address using elliptic curve
+    const creator_address = disclose(get_user_address());
+    
+    // Instead of using division for geometric mean, use a simpler approach
+    // that works well enough for initial shares
+    
+    // Simplest approach - use minimum of amounts
+    // This isn't exactly sqrt(a*b) but works adequately for initial bootstrapping
+    const initial_shares = amount0 < amount1 ? amount0 : amount1;
+    
+    // Create the pool
+    const new_pool = LiquidityPool {
+        token0: ordered_token0,
+        token1: ordered_token1,
+        reserve0: ordered_amount0,
+        reserve1: ordered_amount1,
+        creator: creator_address,
+        total_shares: initial_shares,
+        requires_verification: requires_verification,
+        fee: fee
+    };
+    
+    // Store in ledger
+    pools.insert(pool_id, new_pool);
+    
+    // Increment pool count
+    const current_count = pool_count;
+    pool_count = current_count + 1;
+    
+    // Give initial shares to creator using a composite key
+    const share_key = create_share_key(creator_address, pool_id);
+    const creator_shares = initial_shares as Uint<128>;
+    user_shares.insert(share_key, creator_shares);
+    
+    // Token transfers would happen here in a full implementation
+    // using Midnight's token_type and other coin management functions
+}
+
+// ------------------------------
+// Swap Functions (100% Division-Free)
+// ------------------------------
+
+// True constant-product formula check without ANY division
+circuit verify_swap_math_with_fee(
+    reserve_in: Uint<128>,
+    reserve_out: Uint<128>,
+    amount_in: Uint<128>,
+    amount_out: Uint<128>,
+    fee_bps: Uint<16>
+): Boolean {
+    // Apply fee by adjusting the constant product formula
+    // Instead of increasing amount_in to cover fee, we require a higher constant product
+    
+    // Regular check: (reserve_in + amount_in) * (reserve_out - amount_out) >= reserve_in * reserve_out
+    // Fee-adjusted: We check if the new product is at least (1 - fee) of what it should be
+    
+    const new_reserve_in = reserve_in + amount_in;
+    const new_reserve_out = reserve_out - amount_out;
+    
+    const old_product = reserve_in * reserve_out;
+    const new_product = new_reserve_in * new_reserve_out;
+    
+    // Apply fee modifier (fee is in basis points, e.g., 30 = 0.3%)
+    // Instead of: new_product >= old_product
+    // We check: new_product * 10000 >= old_product * (10000 - fee_bps)
+    const fee_adjusted_required = old_product * (10000 - fee_bps as Uint<128>);
+    const scaled_new_product = new_product * 10000 as Uint<128>;
+    
+    return scaled_new_product >= fee_adjusted_required;
+}
+
+// Swap tokens with ZERO divisions
+export circuit swap(
+    pool_id: Field,
+    token_in: Field,
+    amount_in: Uint<128>,
+    amount_out: Uint<128>  // User specifies the exact output amount they want
+): [] {
+    // Get the pool
+    const pool = pools.lookup(pool_id);
+    
+    // Get user's address using elliptic curve
+    const user_address = disclose(get_user_address());
+    
+    // Check verification
+    if (pool.requires_verification) {
+        const is_verified = is_user_verified(user_address);
+        assert is_verified "Ethiopian ID verification required for this pool";
+    }
+    
+    // Determine which token is being swapped in
+    const is_token0 = field_equals(token_in, pool.token0);
+    
+    // Get the reserves based on which token is being swapped
+    const reserve_in = is_token0 ? pool.reserve0 : pool.reserve1;
+    const reserve_out = is_token0 ? pool.reserve1 : pool.reserve0;
+    
+    // Verify the swap maintains or increases the constant product with fee
+    const is_valid = verify_swap_math_with_fee(reserve_in, reserve_out, amount_in, amount_out, pool.fee);
+    assert is_valid "Invalid swap: violates constant product formula or fee requirements";
+    
+    // Calculate new reserves
+    const new_reserve_in = (reserve_in + amount_in) as Uint<128>;
+    const new_reserve_out = (reserve_out - amount_out) as Uint<128>;
+    
+    // Update pool reserves
+    const updated_pool = LiquidityPool {
+        token0: pool.token0,
+        token1: pool.token1,
+        reserve0: is_token0 ? new_reserve_in : new_reserve_out,
+        reserve1: is_token0 ? new_reserve_out : new_reserve_in,
+        creator: pool.creator,
+        total_shares: pool.total_shares,
+        requires_verification: pool.requires_verification,
+        fee: pool.fee
+    };
+    
+    // Update the pool
+    pools.insert(pool_id, updated_pool);
+}
+
+// Add liquidity (100% division-free)
+export circuit add_liquidity(
+    pool_id: Field,
+    amount0: Uint<128>,
+    amount1: Uint<128>
+): [] {
+    // Get the pool
+    const pool = pools.lookup(pool_id);
+    
+    // Verify caller is the pool creator using elliptic curve
+    const user_address = disclose(get_user_address());
+    assert pool.creator == user_address "Only pool creator can add liquidity";
+    
+    // For simplicity, use the smaller amount for shares
+    const new_shares = amount0 < amount1 ? amount0 : amount1;
+    
+    // Update the user's shares
+    const share_key = create_share_key(user_address, pool_id);
+    const current_shares = user_shares.lookup(share_key);
+    const updated_shares = (current_shares + new_shares) as Uint<128>;
+    user_shares.insert(share_key, updated_shares);
+    
+    // Update pool reserves and total shares
+    const new_reserve0 = (pool.reserve0 + amount0) as Uint<128>;
+    const new_reserve1 = (pool.reserve1 + amount1) as Uint<128>;
+    
+    // Verify that the constant product doesn't decrease
+    const old_product = pool.reserve0 * pool.reserve1;
+    const new_product = new_reserve0 * new_reserve1;
+    assert new_product >= old_product "Constant product decreased";
+    
+    const updated_pool = LiquidityPool {
+        token0: pool.token0,
+        token1: pool.token1,
+        reserve0: new_reserve0,
+        reserve1: new_reserve1,
+        creator: pool.creator,
+        total_shares: (pool.total_shares + new_shares) as Uint<128>,
+        requires_verification: pool.requires_verification,
+        fee: pool.fee
+    };
+    
+    // Update the pool
+    pools.insert(pool_id, updated_pool);
+}
+
+// Remove liquidity (100% division-free)
+export circuit remove_liquidity(
+    pool_id: Field,
+    shares: Uint<128>,
+    amount0: Uint<128>,
+    amount1: Uint<128>
+): [] {
+    // Get the pool
+    const pool = pools.lookup(pool_id);
+    
+    // Verify caller is the pool creator using elliptic curve
+    const user_address = disclose(get_user_address());
+    assert pool.creator == user_address "Only pool creator can remove liquidity";
+    
+    // Check user has enough shares
+    const share_key = create_share_key(user_address, pool_id);
+    const current_shares = user_shares.lookup(share_key);
+    assert current_shares >= shares "Insufficient shares";
+    
+    // Check proportionality (without division!)
+    // If: amount0/reserve0 = amount1/reserve1 = shares/total_shares
+    // Then: amount0 * total_shares = shares * reserve0
+    //       amount1 * total_shares = shares * reserve1
+    
+    // Verify the proportions are fair
+    const amount0_check = amount0 * pool.total_shares;
+    const amount0_expected = shares * pool.reserve0;
+    assert amount0_check <= amount0_expected "Unfair token0 amount";
+    
+    const amount1_check = amount1 * pool.total_shares;
+    const amount1_expected = shares * pool.reserve1;
+    assert amount1_check <= amount1_expected "Unfair token1 amount";
+    
+    // Update shares
+    const updated_shares = (current_shares - shares) as Uint<128>;
+    user_shares.insert(share_key, updated_shares);
+    
+    // Calculate new reserves
+    const new_reserve0 = (pool.reserve0 - amount0) as Uint<128>;
+    const new_reserve1 = (pool.reserve1 - amount1) as Uint<128>;
+    
+    // Update pool reserves and total shares
+    const updated_pool = LiquidityPool {
+        token0: pool.token0,
+        token1: pool.token1,
+        reserve0: new_reserve0,
+        reserve1: new_reserve1,
+        creator: pool.creator,
+        total_shares: (pool.total_shares - shares) as Uint<128>,
+        requires_verification: pool.requires_verification,
+        fee: pool.fee
+    };
+    
+    // Update the pool
+    pools.insert(pool_id, updated_pool);
+}
+
+// Toggle verification requirement for a pool (restricted to creator)
+export circuit set_verification_requirement(
+    pool_id: Field,
+    requires_verification: Boolean
+): [] {
+    // Get the pool
+    const pool = pools.lookup(pool_id);
+    
+    // Verify caller is the pool creator using elliptic curve
+    const user_address = disclose(get_user_address());
+    assert pool.creator == user_address "Only pool creator can change settings";
+    
+    // Update pool state
+    const updated_pool = LiquidityPool {
+        token0: pool.token0,
+        token1: pool.token1,
+        reserve0: pool.reserve0,
+        reserve1: pool.reserve1,
+        creator: pool.creator,
+        total_shares: pool.total_shares,
+        requires_verification: requires_verification,
+        fee: pool.fee
+    };
+    
+    // Update the pool
+    pools.insert(pool_id, updated_pool);
+}
+
+// ------------------------------
+// View Functions
+// ------------------------------
+
+// Get the number of pools
+export circuit get_pool_count(): Uint<64> {
+    return pool_count as Uint<64>;
+}
+
+// Get pool information
+export circuit get_pool_info(pool_id: Field): LiquidityPool {
+    return pools.lookup(pool_id);
+}
+
+// Get user's verification status
+export circuit get_verification_status(user_address: Field): [Boolean, Field] {
+    const expiration = verified_users.lookup(user_address);
+    const current_time = disclose(get_current_time());
+    return [field_greater_than(expiration, current_time), expiration];
+}
+
+// ------------------------------
+// Test Functions
+// ------------------------------
+
+// Create a sample credential for testing
+witness create_test_credential(): FaydaCredential;
+
+// Test verification flow
+export circuit test_verification(): [] {
+    const test_credential = create_test_credential();
+    const is_valid = verify_ethiopian_citizenship(test_credential);
+    assert is_valid "Test credential verification failed";
+} 

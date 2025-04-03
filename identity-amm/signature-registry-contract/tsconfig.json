@@ -1,0 +1,20 @@
+// Placeholder: Add tsconfig.json content based on the guide.
+// This typically inherits from a base tsconfig in the workspace root.
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+} // Example Structure 

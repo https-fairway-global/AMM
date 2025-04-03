@@ -1,0 +1,14 @@
+// Placeholder: Add tsconfig.json content based on the guide.
+// This typically inherits from a base tsconfig in the identity-amm directory or workspace root.
+{
+  // "extends": "../../tsconfig.base.json", // Or potentially "../tsconfig.json"
+  // "compilerOptions": {
+  //   "outDir": "./dist",
+  //   "rootDir": "./src"
+  // },
+  // "references": [
+  //   { "path": "../signature-registry-contract" }
+  // ],
+  // "include": ["src/**/*"],
+  // "exclude": ["node_modules", "dist"]
+} // Example Structure 

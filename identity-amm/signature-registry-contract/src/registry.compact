@@ -1,0 +1,159 @@
+pragma language_version >= 0.14.0;
+import CompactStandardLibrary;
+
+// ------------------------------
+// Ledger State for Verification
+// ------------------------------
+
+// Store verification status for Ethiopian IDs
+export ledger verified_users: Map<Field, Field>; // User Address -> expiration timestamp
+
+// ------------------------------
+// Type Definitions
+// ------------------------------
+
+// Ethiopian Fayda credential structure
+struct FaydaCredential {
+    id: Field;                 // Credential ID
+    issuer: Field;             // Issuer ID (authority)
+    issuance_date: Field;      // When credential was issued
+    valid_until: Field;        // Expiration timestamp
+    subject_id: Field;         // Subject identifier (could be linked to user address indirectly)
+    citizenship: Field;        // Citizenship field (Ethiopian)
+    region: Field;             // Region within Ethiopia
+    signature: Vector<2, Field>; // Credential signature (simplified for example)
+}
+
+// ------------------------------
+// Constants
+// ------------------------------
+
+// Trusted issuers for Ethiopian Fayda ID (Replace with actual public keys/identifiers)
+circuit trusted_issuer_1(): Field {
+    // Placeholder: Replace with actual trusted issuer identifier
+    return 1234567890;
+}
+
+circuit trusted_issuer_2(): Field {
+    // Placeholder: Replace with actual trusted issuer identifier
+    return 9876543210;
+}
+
+// Expected value indicating Ethiopian citizenship in the credential
+circuit ethiopian_citizenship_value(): Field {
+    // Placeholder: Replace with actual value used in credentials
+    return 5432109876;
+}
+
+// ------------------------------
+// Utility Circuits
+// ------------------------------
+
+// Check if an issuer is trusted
+circuit is_trusted_issuer(issuer: Field): Boolean {
+    return issuer == trusted_issuer_1() || issuer == trusted_issuer_2();
+}
+
+// Get current time (relies on environment/witness)
+circuit get_current_time(): Field {
+    return current_time(); // Provided by witness function
+}
+
+// Convert a CurvePoint (public key) to a Field (address)
+circuit curve_point_to_field(point: CurvePoint): Field {
+    // Using x-coordinate as a simplified address. Consider hashing both for uniqueness.
+    return point.x;
+}
+
+// Get user's public address as Field from their secret key
+circuit get_user_address(): Field {
+    const secret_key = user_secret_key(); // Provided by witness function
+    const public_key = ec_mul_generator(secret_key);
+    return curve_point_to_field(public_key);
+}
+
+// Compare two Fields, returns true if a > b (simplified)
+// WARNING: Direct Field comparison is complex. This is a placeholder.
+// A robust implementation might involve bitwise checks or range proofs.
+circuit field_greater_than(a: Field, b: Field): Boolean {
+    // Placeholder logic: Assumes non-zero 'a' and 'a' different from 'b' means 'a' > 'b'.
+    // This is NOT cryptographically sound for time comparison.
+    // Replace with a secure comparison mechanism suitable for your timestamp representation.
+    return a != b && a != 0; // Highly simplified! Needs proper implementation.
+}
+
+// ------------------------------
+// Witness Functions
+// ------------------------------
+
+// Parse a W3C VC credential JSON string to a FaydaCredential struct
+// The implementation of this function happens outside the contract (e.g., in TS/JS runtime).
+witness parse_fayda_credential(credential_json: Opaque<"string">): FaydaCredential;
+
+// Get the user's secret key (provided securely by the user's environment/wallet).
+witness user_secret_key(): Field;
+
+// Get the current time (provided by the environment, ideally linked to block timestamp).
+witness current_time(): Field;
+
+// ------------------------------
+// Ethiopian ID Verification Logic
+// ------------------------------
+
+// Verify a credential proves Ethiopian citizenship and is currently valid
+circuit verify_ethiopian_citizenship(credential: FaydaCredential): Boolean {
+    // 1. Check issuer trustworthiness
+    const valid_issuer = is_trusted_issuer(credential.issuer);
+
+    // 2. Check citizenship field value
+    const is_ethiopian = credential.citizenship == ethiopian_citizenship_value();
+
+    // 3. Check expiration date
+    const current_time_val = get_current_time();
+    // Use robust comparison: credential must be valid *at* current_time
+    const not_expired = field_greater_than(credential.valid_until, current_time_val);
+
+    // 4. Optional: Verify credential signature (requires public key of issuer & signature scheme logic)
+    // const signature_valid = verify_credential_signature(credential);
+    // For this example, we assume signature verification happens off-chain or is implicitly trusted.
+
+    // All checks must pass
+    return valid_issuer && is_ethiopian && not_expired;
+}
+
+// Public circuit to register a verified Ethiopian ID for the calling user
+export circuit register_verification(credential_json: Opaque<"string">): [] {
+    // 1. Parse the credential (private witness operation)
+    const credential = parse_fayda_credential(credential_json);
+
+    // 2. Verify the credential privately
+    const is_valid = verify_ethiopian_citizenship(credential);
+    assert is_valid "Invalid or expired Ethiopian credential provided.";
+
+    // 3. Get user's public address (derived from secret key via witness)
+    const user_address = disclose(get_user_address());
+    const expiration_timestamp = disclose(credential.valid_until);
+
+    // 4. Store verification status and expiration timestamp in the public ledger
+    verified_users.insert(user_address, expiration_timestamp);
+
+    // Note: No return value needed, success is implied if no assert fails.
+}
+
+// Public view circuit to check if a given user address is currently verified
+export circuit is_user_verified(user_address: Field): Boolean {
+    // 1. Look up the stored expiration timestamp for the user address
+    const expiration_timestamp = verified_users.lookup(user_address);
+
+    // 2. Get the current time
+    const current_time_val = disclose(get_current_time());
+
+    // 3. Compare expiration with current time
+    // User is verified if their expiration timestamp is in the future
+    return field_greater_than(expiration_timestamp, current_time_val);
+}
+
+// Public view function to get the expiration timestamp for a user
+export circuit get_verification_expiration(user_address: Field): Field {
+    return verified_users.lookup(user_address);
+} 

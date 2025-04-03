@@ -1,0 +1,17 @@
+// Placeholder: Add tsconfig.build.json content based on the guide.
+// This will extend the base tsconfig.json for build-specific settings.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
+} // Example Structure 

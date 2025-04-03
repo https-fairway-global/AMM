@@ -1,0 +1,10 @@
+// Placeholder: Add tsconfig.build.json content for amm-api.
+{
+  // "extends": "./tsconfig.json",
+  // "compilerOptions": { ... },
+  // "references": [
+  //   { "path": "../amm-contract" }
+  // ],
+  // "include": ["src/**/*"],
+  // "exclude": ["node_modules", "dist"]
+} // Example Structure 
