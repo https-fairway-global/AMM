@@ -19,7 +19,7 @@
     "compact": "compactc ./src/amm.compact ./src/generated",
     "test": "jest",
     "prepack": "yarn build",
-    "build": "rm -rf dist && yarn compact && tsc -b tsconfig.build.json && cp ./src/amm.compact ./dist",
+    "build": "rm -rf dist && yarn compact && tsc && mkdir -p dist && cp ./src/amm.compact ./dist/amm.compact",
     "lint": "eslint src",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

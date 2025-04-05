@@ -22,7 +22,7 @@ This is a monorepo managed using Yarn workspaces and Turborepo.
 
 - Node.js (v18+ recommended)
 - Yarn (v1.22+)
-- Compact Compiler (`compactc`)
+- Compact Compiler (`compactc` v0.22.0 or compatible)
 - Git
 
 Refer to `Docks/Guide to build.md` for detailed setup instructions.
@@ -37,8 +37,22 @@ Refer to `Docks/Guide to build.md` for detailed setup instructions.
     ```bash
     yarn turbo build
     # Or build specific packages
-    # yarn turbo build --filter='@identity-amm/signature-registry-contract'
+    # yarn turbo build --filter='@identity-amm/*'
     ```
+
+## Current Status & Known Issues (As of 2024-04-05)
+
+The project currently builds successfully using `yarn turbo build --filter='@identity-amm/*'`. However, there are significant limitations due to the current state of the Compact compiler (v0.22.0) and the example code:
+
+1.  **Non-Functional AMM Logic:** Division operations required for core AMM calculations (in `swap` and `add_liquidity` within `amm-contract`) have been replaced with non-functional placeholders (`a / b` is treated as `a`). This was necessary to overcome compiler limitations/bugs related to the division operator and recursion/iteration. **As a result, the AMM contract does not perform correct swap or liquidity calculations.**
+2.  **Missing Contract Type Definitions:** The build process for `amm-contract` is currently not generating its TypeScript declaration file (`dist/index.d.ts`) correctly, despite the configuration appearing valid. This requires a temporary `@ts-ignore` comment in `amm-api/src/index.ts` to allow the build to complete. This impacts type safety when interacting with the contract from the API layer.
+3.  **Placeholder Verification Logic:** The Ethiopian ID verification logic (`placeholder_is_user_verified`, `verify_oracle_signature`) within the Compact code consists of placeholders returning `true`. Actual verification mechanisms need to be implemented.
+
+**Next Steps:**
+
+*   Implement correct division logic in `amm-contract`, likely using a **witness-based approach** where division is calculated off-chain and verified on-chain.
+*   Diagnose and fix the root cause of the missing TypeScript declaration file generation for `amm-contract`.
+*   Implement the actual Fayda ID verification logic, potentially involving cross-contract calls or appropriate oracle patterns.
 
 ## Development
 

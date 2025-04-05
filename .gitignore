@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+build/
 
 # TypeScript build info
 *.tsbuildinfo
@@ -20,12 +21,13 @@ lerna-debug.log*
 
 # IDE directories and files
 .idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
 
 # Compact compiler generated files (if they shouldn't be committed)
 # src/generated/ # Uncomment if generated TS shouldn't be committed
@@ -35,6 +37,11 @@ lerna-debug.log*
 
 # Operating System files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 .env
@@ -80,3 +87,20 @@ coverage
 *~
 
 *temp
+
+# Generated files from compactc (adjust paths as needed)
+**/generated/
+**/zk*
+
+# Test specific
+*.snap
+
+# Midnight specific cache/build artifacts
+/target/
+/tmp/
+
+# Example specific ignores
+examples/midnight-identity-main/identity-provider-api/test-data/
+
+# Add generated files for identity-amm/amm-contract
+identity-amm/amm-contract/src/generated/

@@ -7,13 +7,15 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "emitDeclarationOnly": false
     // If this contract imports types/values from signature-registry-contract,
     // add a reference here:
     // "references": [{ "path": "../signature-registry-contract" }]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/generated/contract/index.d.cts"
   ],
   "exclude": [
     "node_modules",
