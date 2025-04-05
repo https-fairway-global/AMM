@@ -1,14 +1,24 @@
-// Placeholder: Add tsconfig.json content based on the guide.
 {
-  // "extends": "../../tsconfig.base.json",
-  // "compilerOptions": {
-  //   "outDir": "./dist",
-  //   "rootDir": "./src"
-  // },
-  // "references": [
-  //   { "path": "../signature-registry-api" },
-  //   { "path": "../signature-registry-contract" }
-  // ],
-  // "include": ["src/**/*"],
-  // "exclude": ["node_modules", "dist"]
-} // Example Structure 
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": false
+    // Potentially add "esModuleInterop": true if needed by dependencies like Firestore
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    // Indexer depends on the API package
+    { "path": "../signature-registry-api" }
+  ]
+} 

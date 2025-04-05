@@ -1,10 +1,25 @@
 // Placeholder: Add tsconfig.json content for amm-api.
 {
-  // "extends": "../../tsconfig.base.json",
-  // "compilerOptions": { ... },
-  // "references": [
-  //   { "path": "../amm-contract" }
-  // ],
-  // "include": ["src/**/*"],
-  // "exclude": ["node_modules", "dist"]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": false // Keep this for now
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    { "path": "../amm-contract" }
+    // Add reference to signature-registry-api if needed
+    // { "path": "../signature-registry-api" }
+  ]
 } // Example Structure 

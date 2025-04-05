@@ -15,7 +15,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^3.12.4":
+"@apollo/client@npm:^3.0.0, @apollo/client@npm:^3.12.4":
   version: 3.13.5
   resolution: "@apollo/client@npm:3.13.5"
   dependencies:
@@ -1806,7 +1806,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google-cloud/firestore@npm:^7.11.0":
+"@google-cloud/firestore@npm:^7.0.0, @google-cloud/firestore@npm:^7.11.0":
   version: 7.11.0
   resolution: "@google-cloud/firestore@npm:7.11.0"
   dependencies:
@@ -1933,6 +1933,122 @@ __metadata:
   checksum: 10/05bb99ed06c16408a45a833f03a732f59bf6184795d4efadd33238ff8699190a8c871ad1121241bb6501589a9598dc83bf25b99dcbcf41e155cdf36e35e937a3
   languageName: node
   linkType: hard
+
+"@identity-amm/amm-api@workspace:*, @identity-amm/amm-api@workspace:identity-amm/amm-api":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/amm-api@workspace:identity-amm/amm-api"
+  dependencies:
+    "@identity-amm/amm-contract": "workspace:*"
+    "@midnight-ntwrk/compact-runtime": "npm:^0.7.0"
+    "@midnight-ntwrk/midnight-js-contracts": "npm:^0.2.5"
+    "@midnight-ntwrk/midnight-js-types": "npm:^0.2.5"
+    "@midnight-ntwrk/midnight-js-utils": "npm:^0.2.5"
+    eslint: "npm:^8.52.0"
+    jest: "npm:^29.7.0"
+    pino: "npm:^8.15.0"
+    rxjs: "npm:^7.8.0"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"@identity-amm/amm-contract@workspace:*, @identity-amm/amm-contract@workspace:identity-amm/amm-contract":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/amm-contract@workspace:identity-amm/amm-contract"
+  dependencies:
+    "@midnight-ntwrk/compact-runtime": "npm:^0.7.0"
+    eslint: "npm:^8.52.0"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"@identity-amm/amm-ui@workspace:identity-amm/amm-ui":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/amm-ui@workspace:identity-amm/amm-ui"
+  dependencies:
+    "@identity-amm/amm-api": "workspace:*"
+    "@types/react": "npm:^18.2.15"
+    "@types/react-dom": "npm:^18.2.7"
+    "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
+    "@typescript-eslint/parser": "npm:^6.0.0"
+    "@vitejs/plugin-react": "npm:^4.0.3"
+    eslint: "npm:^8.45.0"
+    eslint-plugin-react-hooks: "npm:^4.6.0"
+    eslint-plugin-react-refresh: "npm:^0.4.3"
+    pino: "npm:^8.15.0"
+    react: "npm:^18.2.0"
+    react-dom: "npm:^18.2.0"
+    rxjs: "npm:^7.8.0"
+    typescript: "npm:^5.2.2"
+    vite: "npm:^5.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@identity-amm/crypto@workspace:identity-amm/crypto":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/crypto@workspace:identity-amm/crypto"
+  dependencies:
+    eslint: "npm:^8.52.0"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"@identity-amm/ethiopia-verification-contract@workspace:identity-amm/ethiopia-verification-contract":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/ethiopia-verification-contract@workspace:identity-amm/ethiopia-verification-contract"
+  dependencies:
+    "@midnight-ntwrk/compact-runtime": "npm:^0.7.0"
+    eslint: "npm:^8.52.0"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"@identity-amm/signature-registry-api@workspace:*, @identity-amm/signature-registry-api@workspace:identity-amm/signature-registry-api":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/signature-registry-api@workspace:identity-amm/signature-registry-api"
+  dependencies:
+    "@identity-amm/signature-registry-contract": "workspace:*"
+    "@midnight-ntwrk/compact-runtime": "npm:^0.7.0"
+    eslint: "npm:^8.52.0"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"@identity-amm/signature-registry-contract@workspace:*, @identity-amm/signature-registry-contract@workspace:identity-amm/signature-registry-contract":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/signature-registry-contract@workspace:identity-amm/signature-registry-contract"
+  dependencies:
+    "@midnight-ntwrk/compact-runtime": "npm:^0.7.0"
+    eslint: "npm:^8.52.0"
+    jest: "npm:^29.7.0"
+    typescript: "npm:^5.2.2"
+  languageName: unknown
+  linkType: soft
+
+"@identity-amm/signature-registry-indexer@workspace:identity-amm/signature-registry-indexer":
+  version: 0.0.0-use.local
+  resolution: "@identity-amm/signature-registry-indexer@workspace:identity-amm/signature-registry-indexer"
+  dependencies:
+    "@apollo/client": "npm:^3.0.0"
+    "@google-cloud/firestore": "npm:^7.0.0"
+    "@identity-amm/signature-registry-api": "workspace:*"
+    "@midnight-ntwrk/midnight-js-contracts": "npm:^0.2.5"
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "npm:^0.2.5"
+    "@midnight-ntwrk/midnight-js-types": "npm:^0.2.5"
+    eslint: "npm:^8.52.0"
+    graphql: "npm:^16.0.0"
+    graphql-tag: "npm:^2.12.0"
+    jest: "npm:^29.7.0"
+    pino: "npm:^8.15.0"
+    pino-pretty: "npm:^10.2.0"
+    rxjs: "npm:^7.8.0"
+    typescript: "npm:^5.2.2"
+    ws: "npm:^8.0.0"
+  languageName: unknown
+  linkType: soft
 
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
@@ -2500,7 +2616,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@midnight-ntwrk/midnight-js-contracts@npm:0.2.5":
+"@midnight-ntwrk/midnight-js-contracts@npm:0.2.5, @midnight-ntwrk/midnight-js-contracts@npm:^0.2.5":
   version: 0.2.5
   resolution: "@midnight-ntwrk/midnight-js-contracts@npm:0.2.5"
   dependencies:
@@ -2534,7 +2650,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@midnight-ntwrk/midnight-js-indexer-public-data-provider@npm:0.2.5":
+"@midnight-ntwrk/midnight-js-indexer-public-data-provider@npm:0.2.5, @midnight-ntwrk/midnight-js-indexer-public-data-provider@npm:^0.2.5":
   version: 0.2.5
   resolution: "@midnight-ntwrk/midnight-js-indexer-public-data-provider@npm:0.2.5"
   dependencies:
@@ -2585,7 +2701,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@midnight-ntwrk/midnight-js-types@npm:0.2.5":
+"@midnight-ntwrk/midnight-js-types@npm:0.2.5, @midnight-ntwrk/midnight-js-types@npm:^0.2.5":
   version: 0.2.5
   resolution: "@midnight-ntwrk/midnight-js-types@npm:0.2.5"
   dependencies:
@@ -2594,7 +2710,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@midnight-ntwrk/midnight-js-utils@npm:0.2.5":
+"@midnight-ntwrk/midnight-js-utils@npm:0.2.5, @midnight-ntwrk/midnight-js-utils@npm:^0.2.5":
   version: 0.2.5
   resolution: "@midnight-ntwrk/midnight-js-utils@npm:0.2.5"
   checksum: 10/5449becaf8c39f732430b01e26fb8906281113f78441c93f9a9b17231aa9ae304da1244cea30ac36ec1bef6a597124b0ba59689b4557456ce958115538bd2a23
@@ -3542,6 +3658,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:^18.2.7":
+  version: 18.3.6
+  resolution: "@types/react-dom@npm:18.3.6"
+  peerDependencies:
+    "@types/react": ^18.0.0
+  checksum: 10/ae179355401c64423d39946eda22c5f7f74c94ce61c21505024d4d82c33853ec40bc9b370f75e4a7750b0524aba4d95a43fcc328d8d14684dc2abb41ba529de8
+  languageName: node
+  linkType: hard
+
 "@types/react-transition-group@npm:^4.4.10":
   version: 4.4.12
   resolution: "@types/react-transition-group@npm:4.4.12"
@@ -3558,6 +3683,16 @@ __metadata:
     "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10/7fdd8b853e0d291d4138133f93f8d5c333da918e5804afcea61a923aab4bdfc9bb15eb21a5640959b452972b8715ddf10ffb12b3bd071898b9e37738636463f2
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.2.15":
+  version: 18.3.20
+  resolution: "@types/react@npm:18.3.20"
+  dependencies:
+    "@types/prop-types": "npm:*"
+    csstype: "npm:^3.0.2"
+  checksum: 10/020c51e63b60862e6d772f0cdea0b9441182eedab6289dabd8add0708ded62003834c4e7c6f23a1ccd3ca9486b46296057c3f881c34261a0483765351f8d0bc3
   languageName: node
   linkType: hard
 
@@ -3668,7 +3803,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:^6.8.0":
+"@typescript-eslint/eslint-plugin@npm:^6.0.0, @typescript-eslint/eslint-plugin@npm:^6.8.0":
   version: 6.21.0
   resolution: "@typescript-eslint/eslint-plugin@npm:6.21.0"
   dependencies:
@@ -3693,7 +3828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:^6.4.0, @typescript-eslint/parser@npm:^6.8.0":
+"@typescript-eslint/parser@npm:^6.0.0, @typescript-eslint/parser@npm:^6.4.0, @typescript-eslint/parser@npm:^6.8.0":
   version: 6.21.0
   resolution: "@typescript-eslint/parser@npm:6.21.0"
   dependencies:
@@ -3798,7 +3933,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-react@npm:4.3.4, @vitejs/plugin-react@npm:^4.1.1":
+"@vitejs/plugin-react@npm:4.3.4, @vitejs/plugin-react@npm:^4.0.3, @vitejs/plugin-react@npm:^4.1.1":
   version: 4.3.4
   resolution: "@vitejs/plugin-react@npm:4.3.4"
   dependencies:
@@ -6477,6 +6612,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-react-hooks@npm:^4.6.0":
+  version: 4.6.2
+  resolution: "eslint-plugin-react-hooks@npm:4.6.2"
+  peerDependencies:
+    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
+  checksum: 10/5a0680941f34e70cf505bcb6082df31a3e445d193ee95a88ff3483041eb944f4cefdaf7e81b0eb1feb4eeceee8c7c6ddb8a2a6e8c4c0388514a42e16ac7b7a69
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-react-refresh@npm:^0.4.3":
+  version: 0.4.19
+  resolution: "eslint-plugin-react-refresh@npm:0.4.19"
+  peerDependencies:
+    eslint: ">=8.40"
+  checksum: 10/4a17088da4da6e1efe4a5bb76bcf917c82d271d8c327a6b906a4ac5623bf7b0a8a990eca78c2e04267ede9095854442ff08d7e1484baa258827a6dc3452ab892
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-react@npm:^7.33.2":
   version: 7.37.4
   resolution: "eslint-plugin-react@npm:7.37.4"
@@ -6532,7 +6685,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.52.0":
+"eslint@npm:^8.45.0, eslint@npm:^8.52.0":
   version: 8.57.1
   resolution: "eslint@npm:8.57.1"
   dependencies:
@@ -7442,7 +7595,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:^2.12.0, graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -7462,7 +7615,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:^16.10.0, graphql@npm:^16.8.0":
+"graphql@npm:^16.0.0, graphql@npm:^16.10.0, graphql@npm:^16.8.0":
   version: 16.10.0
   resolution: "graphql@npm:16.10.0"
   checksum: 10/d42cf81ddcf3a61dfb213217576bf33c326f15b02c4cee369b373dc74100cbdcdc4479b3b797e79b654dabd8fddf50ef65ff75420e9ce5596c02e21f24c9126a
@@ -10173,7 +10326,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-pretty@npm:^10.2.3":
+"pino-pretty@npm:^10.2.0, pino-pretty@npm:^10.2.3":
   version: 10.3.1
   resolution: "pino-pretty@npm:10.3.1"
   dependencies:
@@ -10204,7 +10357,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^8.16.0, pino@npm:^8.16.1":
+"pino@npm:^8.15.0, pino@npm:^8.16.0, pino@npm:^8.16.1":
   version: 8.21.0
   resolution: "pino@npm:8.21.0"
   dependencies:
@@ -11076,6 +11229,15 @@ __metadata:
   dependencies:
     tslib: "npm:^2.1.0"
   checksum: 10/b10cac1a5258f885e9dd1b70d23c34daeb21b61222ee735d2ec40a8685bdca40429000703a44f0e638c27a684ac139e1c37e835d2a0dc16f6fc061a138ae3abb
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:^7.8.0":
+  version: 7.8.2
+  resolution: "rxjs@npm:7.8.2"
+  dependencies:
+    tslib: "npm:^2.1.0"
+  checksum: 10/03dff09191356b2b87d94fbc1e97c4e9eb3c09d4452399dddd451b09c2f1ba8d56925a40af114282d7bc0c6fe7514a2236ca09f903cf70e4bbf156650dddb49d
   languageName: node
   linkType: hard
 
@@ -12562,7 +12724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^5.4.11":
+"vite@npm:^5.0.0, vite@npm:^5.4.11":
   version: 5.4.17
   resolution: "vite@npm:5.4.17"
   dependencies:
@@ -12938,6 +13100,21 @@ __metadata:
     imurmurhash: "npm:^0.1.4"
     signal-exit: "npm:^3.0.7"
   checksum: 10/3be1f5508a46c190619d5386b1ac8f3af3dbe951ed0f7b0b4a0961eed6fc626bd84b50cf4be768dabc0a05b672f5d0c5ee7f42daa557b14415d18c3a13c7d246
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.0.0":
+  version: 8.18.1
+  resolution: "ws@npm:8.18.1"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10/3f38e9594f2af5b6324138e86b74df7d77bbb8e310bf8188679dd80bac0d1f47e51536a1923ac3365f31f3d8b25ea0b03e4ade466aa8292a86cd5defca64b19b
   languageName: node
   linkType: hard
 

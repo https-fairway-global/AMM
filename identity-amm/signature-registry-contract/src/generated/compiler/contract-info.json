@@ -1,0 +1,52 @@
+{
+  "circuits": [
+    {
+      "name": "register_verification",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "credential_json",
+          "type": {
+            "type-name": "Opaque",
+            "tsType": "string"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "is_user_verified",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "user_address",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "get_verification_expiration",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "user_address",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Field"
+      }
+    }
+  ]
+}

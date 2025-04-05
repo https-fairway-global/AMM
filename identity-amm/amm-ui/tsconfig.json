@@ -1,23 +1,31 @@
 // Placeholder: Add tsconfig.json for amm-ui (Vite/React oriented).
 {
-  // "extends": "../../tsconfig.base.json", // Or a specific UI base
-  // "compilerOptions": {
-  //   "target": "ESNext",
-  //   "useDefineForClassFields": true,
-  //   "lib": ["DOM", "DOM.Iterable", "ESNext"],
-  //   "allowJs": false,
-  //   "skipLibCheck": true,
-  //   "esModuleInterop": false,
-  //   "allowSyntheticDefaultImports": true,
-  //   "strict": true,
-  //   "forceConsistentCasingInFileNames": true,
-  //   "module": "ESNext",
-  //   "moduleResolution": "Node",
-  //   "resolveJsonModule": true,
-  //   "isolatedModules": true,
-  //   "noEmit": true,
-  //   "jsx": "react-jsx"
-  // },
-  // "include": ["src"],
-  // "references": [{ "path": "./tsconfig.node.json" }] // Often used by Vite
+  "extends": "../../tsconfig.base.json", // Inherit base settings
+  "compilerOptions": {
+    "target": "ESNext", // Target modern JS features
+    "lib": ["DOM", "DOM.Iterable", "ESNext"], // Include DOM types
+    "module": "ESNext", // Use ES modules
+    "skipLibCheck": true, // Skip checking libraries (faster builds)
+
+    /* Bundler mode */
+    "moduleResolution": "bundler", // Let the bundler (Vite) handle resolution
+    "allowImportingTsExtensions": true, // Allow importing .ts files (Vite handles this)
+    "resolveJsonModule": true,
+    "isolatedModules": true, // Ensure files can be transpiled independently
+    "noEmit": true, // Vite handles emitting files, TS only type checks
+    "jsx": "react-jsx", // Use new JSX transform
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"], // Only include files in the src directory
+  "references": [
+      // Reference the AMM API package this UI depends on
+      { "path": "../amm-api" }
+      // Add other references if needed (e.g., signature-registry-api)
+  ]
 } // Example Structure 

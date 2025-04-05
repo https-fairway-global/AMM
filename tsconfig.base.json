@@ -1,0 +1,54 @@
+{
+  "compilerOptions": {
+    // Type Checking
+    "strict": true, // Enable all strict type-checking options
+    "noImplicitAny": true, // Raise error on expressions and declarations with an implied 'any' type
+    "strictNullChecks": true, // Enable strict null checks
+    "strictFunctionTypes": true, // Enable strict checking of function types
+    "strictBindCallApply": true, // Enable strict 'bind', 'call', and 'apply' methods on functions
+    "strictPropertyInitialization": true, // Ensure non-undefined class properties are initialized in the constructor
+    "noImplicitThis": true, // Raise error on 'this' expressions with an implied 'any' type
+    "useUnknownInCatchVariables": true, // Type catch clause variables as 'unknown' instead of 'any'
+    "alwaysStrict": true, // Parse in strict mode and emit "use strict" for each source file
+    "noUnusedLocals": true, // Report errors on unused locals
+    "noUnusedParameters": true, // Report errors on unused parameters
+    "exactOptionalPropertyTypes": true, // Interpret optional property types as written, rather than adding 'undefined'
+    "noImplicitReturns": true, // Report error when not all code paths in function return a value
+    "noFallthroughCasesInSwitch": true, // Report errors for fallthrough cases in switch statement
+    "noUncheckedIndexedAccess": true, // Include 'undefined' in index signature results
+    "noImplicitOverride": true, // Ensure overriding members in derived classes are marked with an override modifier
+    "noPropertyAccessFromIndexSignature": false, // Require bracket notation when accessing properties with dotted notation (personal preference)
+
+    // Modules
+    "module": "NodeNext", // Specify module code generation: 'Node16' or 'NodeNext' for modern Node.js
+    "moduleResolution": "NodeNext", // Specify module resolution strategy
+    "resolveJsonModule": true, // Include modules imported with '.json' extension
+    "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
+    "allowSyntheticDefaultImports": true, // Allow default imports from modules with no default export
+    "baseUrl": ".", // Base directory to resolve non-absolute module names (useful with paths)
+    // "paths": {}, // Optional: Specify path mapping relative to baseUrl
+
+    // Emit
+    // "declaration": true, // Handled by individual packages if needed
+    // "sourceMap": true, // Handled by individual packages if needed
+    "outDir": "dist", // Redirect output structure to the directory (usually overridden by packages)
+    "removeComments": false, // Do not remove comments to preserve documentation
+    "importsNotUsedAsValues": "remove", // Remove unused imports
+    "newLine": "lf", // Use Linux line endings
+
+    // JavaScript Support
+    "allowJs": false, // Do not allow JavaScript files to be compiled
+    "checkJs": false, // Do not report errors in .js files
+
+    // Language and Environment
+    "target": "ES2022", // Specify ECMAScript target version
+    "lib": ["ES2022"], // Specify library files to be included in the compilation
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
+
+    // Completeness
+    "composite": true, // Enable constraints that allow a tool like TSBuild to quickly determine if a project has been built
+    "declarationMap": true // Generates a sourcemap for each corresponding '.d.ts' file
+  },
+  "exclude": ["node_modules", "dist", "**/dist", "**/node_modules"]
+}

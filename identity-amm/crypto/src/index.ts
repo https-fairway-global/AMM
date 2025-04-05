@@ -1,5 +1,10 @@
-// Placeholder: Add index.ts content for crypto package.
-// Export cryptographic utilities or related functions.
+// Placeholder for shared cryptographic utilities
 
-// export const encrypt = () => { ... };
-// export const decrypt = () => { ... }; // Example Exports 
+// Example utility function
+export function exampleCryptoUtil(input: string): string {
+  console.log('Example crypto util called with:', input);
+  // Replace with actual crypto logic
+  return `processed_${input}`;
+}
+
+// Add and export other crypto functions as needed 

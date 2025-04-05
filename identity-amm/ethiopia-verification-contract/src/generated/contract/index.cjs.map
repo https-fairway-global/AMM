@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.cjs",
+  "sourceRoot": "../../",
+  "sources": ["contract.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAAA;;;;;;;;MASA,AAAA,YAIC;;;;cAJ2B,cAAmB;;;;;;;;;;;;;;;;yCAAnB,cAAmB;;;;;;;;;+CAAnB,cAAmB;;;OAI9C;;;GAAE;EAbH;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAMA;;;;;;;;;;uDAAqD;;;;;;;GAOlD;EAJH,AAAA,gBAIC,4BAJ2B,cAAmB;UAE3C,KAAiB,GAAiB,cAAY;IAA9C;;;;;;;;;;yGAAA,KAAiB;;;;;;sDAAA;;GAEpB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAPD;;;;uCAAA;;;;;;;;;;;;;;;;0FAAqD;;;;;uCAArD;;;;;;;;;;;;0FAAqD;;;;;;;;;;;;uCAArD;;;;;;;;;;;;;;;0FAAqD;;;;;;;;;;;;uCAArD;;;;;;;;;;;;;;;;;0FAAqD;;;;;;;;KAAA;;;;;;;;;;;;;;"
+}

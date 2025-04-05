@@ -1,5 +1,14 @@
-// Placeholder: Add the Compact contract source code for Ethiopia verification.
+pragma language_version >= 0.14.0;
+import CompactStandardLibrary;
 
-// contract EthiopiaVerification {
-//   ...
-// } // Example Structure 
+// Placeholder contract logic for Ethiopia Verification
+
+// Example Ledger
+export ledger is_verified_extra: Map<Field, Boolean>;
+
+// Example Circuit
+export circuit verify_extra(user_address: Field): Boolean {
+    // Placeholder - always true
+    is_verified_extra.insert(disclose(user_address), true);
+    return true;
+} 

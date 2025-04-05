@@ -1,6 +1,6 @@
 import { type Firestore } from 'firebase-admin/firestore';
 import admin from 'firebase-admin';
-import { type ExtractedContractRecord } from './common-types';
+import { type ExtractedContractRecord } from './common-types.js';
 
 export interface IndexStorage {
   readonly saveBlockHeight: (height: number) => Promise<void>;

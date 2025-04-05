@@ -1,7 +1,16 @@
 // Placeholder: Add tsconfig.build.json content for ethiopia-verification-contract.
 {
-  // "extends": "./tsconfig.json",
-  // "compilerOptions": { ... },
-  // "include": ["src/**/*"],
-  // "exclude": ["node_modules", "dist"]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
 } // Example Structure 

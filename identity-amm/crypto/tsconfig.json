@@ -1,7 +1,21 @@
 // Placeholder: Add tsconfig.json content for crypto package.
 {
-  // "extends": "../../tsconfig.base.json",
-  // "compilerOptions": { ... },
-  // "include": ["src/**/*"],
-  // "exclude": ["node_modules", "dist"]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+    // Add project references if this package depends on others
+    // "references": []
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 } // Example Structure 

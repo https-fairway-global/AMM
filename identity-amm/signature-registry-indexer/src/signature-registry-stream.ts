@@ -4,21 +4,19 @@ import {
   type ContractStateUpdateBlock,
   type ExtractedContractRecord,
   type StreamElementData,
-} from './common-types';
+} from './common-types.js';
 import { gql } from 'graphql-tag';
-import { ApolloClient } from '@apollo/client/core/ApolloClient';
-import type { FetchResult, NormalizedCacheObject } from '@apollo/client';
+import { ApolloClient, InMemoryCache, type FetchResult, type NormalizedCacheObject } from '@apollo/client';
 import type { PublicDataProvider, VerifierKey } from '@midnight-ntwrk/midnight-js-types';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import WebSocket from 'ws';
 import { type NetworkId, setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
-import { InMemoryCache } from '@apollo/client/cache/inmemory/inMemoryCache';
 import { map } from 'rxjs/operators';
-import { ledger } from '@bricktowers/signature-registry-contract';
 import { verifyContractState } from '@midnight-ntwrk/midnight-js-contracts';
 import { toHex } from '@midnight-ntwrk/midnight-js-utils';
+import type { ContractState } from '@midnight-ntwrk/compact-runtime';
 
 export interface SignatureRegistryStream {
   readonly contractUpdateStateStream: (blockHeight: number) => Observable<ContractStateUpdateBlock>;
@@ -28,10 +26,10 @@ export class SignatureRegistryStreamImpl implements SignatureRegistryStream {
   provider: PublicDataProvider;
   client: ApolloClient<NormalizedCacheObject>;
   config: Config;
-  verifierKeys: Array<['register', VerifierKey]>;
-  constructor(config: Config, verifierKeys: Array<['register', VerifierKey]>) {
+  verifierKeys: Array<['register_verification', VerifierKey]>;
+  constructor(config: Config, verifierKeys: Array<['register_verification', VerifierKey]>) {
     setNetworkId(config.networkId as NetworkId);
-    this.provider = indexerPublicDataProvider(config.indexerUri, config.indexerWsUri, WebSocket);
+    this.provider = indexerPublicDataProvider(config.indexerUri, config.indexerWsUri, WebSocket as any);
     this.verifierKeys = verifierKeys;
     const wsLink = new GraphQLWsLink(
       createClient({
@@ -71,10 +69,10 @@ export class SignatureRegistryStreamImpl implements SignatureRegistryStream {
           variables: { offset: { height } },
         })
         .subscribe({
-          next: (value) => {
+          next: (value: FetchResult<StreamElementData>) => {
             subscriber.next(value);
           },
-          error: (err) => {
+          error: (err: any) => {
             subscriber.error(err);
           },
           complete: () => {
@@ -93,9 +91,10 @@ export class SignatureRegistryStreamImpl implements SignatureRegistryStream {
     );
   };
 
-  contractState = async (address: string) => {
-    const value = firstValueFrom(this.provider.contractStateObservable(address, { type: 'latest' }));
-    return await value.then((state) => ({ address, state }));
+  contractState = async (address: string): Promise<{ address: string, state: ContractState | undefined }> => {
+    const observable = this.provider.contractStateObservable(address, { type: 'latest' }) as unknown as Observable<ContractState | undefined>;
+    const state = await firstValueFrom(observable);
+    return { address, state };
   };
 
   contractStates = async (address: string[]) => {
@@ -106,23 +105,29 @@ export class SignatureRegistryStreamImpl implements SignatureRegistryStream {
     const contractStateAddresses = await this.contractStates(this.contractCallDeployments(streamElementData));
     const contracts: ExtractedContractRecord[] = [];
     contractStateAddresses.forEach((contractStateAddress) => {
-      try {
-        const contractState = ledger(contractStateAddress.state.data);
-        verifyContractState(this.verifierKeys, contractStateAddress.state);
-        const item = {
-          walletPublicKey: toHex(contractState.walletPublicKey.bytes),
-          signingPublicKey: contractState.signingPublicKey,
-        };
-        contracts.push(item);
-        console.log(`Item`, item);
-      } catch (e) {
-        console.warn(
-          'Contract ' +
-            contractStateAddress.address +
-            ' at blockHeight:' +
-            streamElementData.blocks.height +
-            ' is not contract',
-        );
+      if (contractStateAddress.state) {
+        try {
+          const contractStateData = (contractStateAddress.state as any).data;
+          verifyContractState(this.verifierKeys, contractStateAddress.state);
+          const item = {
+            walletPublicKey: toHex((contractStateData as any)?.walletPublicKey?.bytes ?? ''),
+            signingPublicKey: (contractStateData as any)?.signingPublicKey ?? '',
+            contractAddress: contractStateAddress.address,
+          };
+          contracts.push(item);
+          console.log(`Item`, item);
+        } catch (e) {
+          console.warn(
+            'Contract ' +
+              contractStateAddress.address +
+              ' at blockHeight:' +
+              streamElementData.blocks.height +
+              ' state validation/parsing failed',
+            e
+          );
+        }
+      } else {
+        console.warn(`Contract ${contractStateAddress.address} at block ${streamElementData.blocks.height} had undefined state.`);
       }
     });
     return {

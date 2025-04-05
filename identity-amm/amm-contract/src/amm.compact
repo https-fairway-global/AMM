@@ -1,5 +1,460 @@
-// Placeholder: Add the Compact contract source code for the AMM here.
+pragma language_version >= 0.14.0;
+import CompactStandardLibrary;
 
-// contract AMM {
-//   ...
-// } // Example Structure 
+// TODO: Import necessary functions/types from the signature registry contract
+// Example: import { is_user_verified } from "@identity-amm/signature-registry-contract";
+// This requires the registry contract to export `is_user_verified` and for dependency to be set up.
+// For now, we'll use a placeholder function.
+circuit placeholder_is_user_verified(user_address: Field): Boolean {
+    // Placeholder implementation - always returns true for now
+    // Replace with actual cross-contract call or imported logic
+    return true;
+}
+
+// ------------------------------
+// Ledger State for AMM
+// ------------------------------
+
+// Public storage for liquidity pools
+export ledger pools: Map<Field, LiquidityPool>; // Replaced NestedMap with Map
+
+// Public storage for user LP shares
+// Using Field as key for now (e.g., hash(user_address, pool_id))
+export ledger user_shares: Map<Field, Uint<64>>; // Replaced NestedMap with Map
+
+// Counter for pool IDs (simple increment for example)
+export ledger pool_count: Field; // Removed initializer
+
+// State for the signature registry contract address (set during init)
+export ledger signature_registry_address: Field; // Already had no initializer
+
+// ------------------------------
+// Type Definitions
+// ------------------------------
+
+// Main liquidity pool structure
+struct LiquidityPool {
+    token0: Field,
+    token1: Field,
+    reserve0: Uint<64>,       // Reverted to Uint<64>
+    reserve1: Uint<64>,       // Reverted to Uint<64>
+    creator: Field,
+    total_shares: Uint<64>,   // Reverted to Uint<64>
+    requires_verification: Boolean,
+    fee: Uint<16>,
+}
+
+// Unique identifier for a liquidity pool (e.g., hash of token pair)
+// type LiquidityPoolId = Field; // Type alias removed
+
+// Structure to hold user shares for a specific pool
+// Key could be hash(user_address, pool_id)
+struct UserShare {
+    owner: Field,
+    pool_id: Field,
+    shares: Uint<64>, // Reverted to Uint<64>
+}
+
+// Nested map: Pool ID -> LiquidityPool data
+// type PoolsStorage = NestedMap<Field, LiquidityPool>; // Type alias removed
+
+// Nested map: User Share Key -> User Share data
+// Key could be derived from user address and pool ID
+// type UserSharesStorage = NestedMap<Field, Uint<128>>; // Type alias removed
+
+// ------------------------------
+// Utility Circuits
+// ------------------------------
+
+// Get current time (relies on environment/witness)
+circuit get_current_time(): Field {
+    return current_time(); // Provided by witness function
+}
+
+// Convert a CurvePoint (public key) to a Field (address)
+circuit curve_point_to_field(point: CurvePoint): Field {
+    return point.x; // Simplified
+}
+
+// Get user's public address as Field from their secret key
+circuit get_user_address(): Field {
+    const secret_key = user_secret_key(); // Provided by witness function
+    const public_key = ec_mul_generator(secret_key);
+    return curve_point_to_field(public_key);
+}
+
+// Compare two Fields for equality
+circuit field_equals(a: Field, b: Field): Boolean {
+    return a == b;
+}
+
+// Generate pool ID from token addresses (simplified)
+circuit generate_pool_id(token0: Field, token1: Field): Field {
+    // Ensure consistent order for ID generation (e.g., hash(min(t0, t1), max(t0, t1)))
+    // Simple addition is NOT sufficient as it's commutative.
+    // Using persistent_hash for a better unique ID.
+    // Note: Field comparison for ordering is tricky. Assume order is given or use a robust method.
+    return degrade_to_transient(persistent_hash<Vector<2, Field>>([token0, token1]));
+}
+
+// Order tokens (Placeholder - requires robust Field comparison or external ordering)
+circuit order_tokens(token0: Field, token1: Field): [Field, Field] {
+    // Placeholder: Returns tokens as given. Implement proper ordering based on Field values.
+    return [token0, token1];
+}
+
+// Create a composite key for user shares (simplified)
+circuit create_share_key(user_address: Field, pool_id: Field): Field { // Replaced LiquidityPoolId
+    // Replace with a collision-resistant hash of user and pool ID
+    return user_address + pool_id; // Simple placeholder
+}
+
+// Placeholder for modular inverse calculation (required for on-chain division)
+// Replace with actual implementation or library call
+circuit calculate_modular_inverse(value: Field): Field {
+    // WARNING: Placeholder implementation! Returns 1, will not work correctly.
+    // Real implementation needs e.g., pow(value, p-2) where p is field modulus
+    assert value != 0 "Cannot calculate inverse of zero";
+    return 1; // Replace with actual modular inverse logic
+}
+
+// ------------------------------
+// Witness Functions (needed by utilities)
+// ------------------------------
+
+witness user_secret_key(): Field;
+witness current_time(): Field;
+
+// ------------------------------
+// Pool Management
+// ------------------------------
+
+export circuit create_pool(
+    token0: Field,
+    token1: Field,
+    initial_reserve0: Uint<64>, // Reverted to Uint<64>
+    initial_reserve1: Uint<64>, // Reverted to Uint<64>
+    requires_verification: Boolean,
+    fee_bps: Uint<16>
+): Field { // Return Pool ID
+    assert token0 != token1 "Tokens must be different";
+    assert initial_reserve0 > 0 && initial_reserve1 > 0 "Initial reserves must be positive";
+    assert fee_bps < 10000 "Fee must be less than 100%";
+
+    // Using tokens/reserves directly as provided.
+    // Caller is responsible for providing tokens in a consistent order
+    // if a canonical pool ID independent of creation order is desired.
+    const t0: Field = token0;
+    const t1: Field = token1;
+    const r0: Uint<64> = initial_reserve0;
+    const r1: Uint<64> = initial_reserve1;
+
+    // Generate pool ID (depends on input order now)
+    const pool_id = disclose(generate_pool_id(t0, t1));
+
+    // Check if pool already exists
+    const existing_pool = pools.lookup(pool_id);
+    // Check if token0 is non-zero (default for non-existent map entry)
+    assert !field_equals(existing_pool.token0, t0) "Pool already exists"; // Simple check
+
+    const creator_address = disclose(get_user_address());
+
+    // Calculate initial shares (simplified: min amount)
+    // A better approach uses sqrt(amount0 * amount1), but requires division or approximation.
+    const initial_shares = (r0 as Field) + (r1 as Field);
+    assert initial_shares != (0 as Field) "Initial shares must be non-zero"; // Check for non-zero instead of > 0
+
+    const new_pool = LiquidityPool {
+        token0: t0,
+        token1: t1,
+        reserve0: r0,
+        reserve1: r1,
+        creator: creator_address,
+        total_shares: initial_shares as Uint<64>, // Cast to Uint<64> for storage
+        requires_verification: requires_verification,
+        fee: fee_bps
+    };
+
+    pools.insert(pool_id, new_pool);
+
+    // Increment pool count (alternative: use pools.size() if available/efficient)
+    const current_count = pool_count;
+    pool_count = current_count + 1;
+
+    // Give initial shares to creator
+    const share_key = create_share_key(creator_address, pool_id);
+    user_shares.insert(share_key, initial_shares as Uint<64>); // Cast to Uint<64> for storage
+
+    // TODO: Handle initial token transfers from creator to contract using Zswap functions
+    // e.g., receive(creator_input_coin0), receive(creator_input_coin1)
+
+    return pool_id;
+}
+
+// ------------------------------
+// Swap Functions (Division-Free)
+// ------------------------------
+
+// Verify constant product formula: (x + dx) * (y - dy) >= x * y * (1 - fee_ratio)
+// Without division: new_x * new_y * 10000 >= x * y * (10000 - fee_bps)
+circuit verify_swap_math_with_fee(
+    reserve_in: Uint<64>,
+    reserve_out: Uint<64>,
+    amount_in: Uint<64>,
+    amount_out: Uint<64>,
+    fee_bps: Uint<16>
+): Boolean {
+    assert reserve_in > 0 && reserve_out > 0 "Invalid reserves";
+    assert amount_in > 0 "Invalid input amount";
+
+    // Perform calculations using Uint arithmetic, expanding types as needed
+    const ten_k = 10000 as Uint<14>; // 10000 fits in 14 bits
+    const fee_multiplier = ten_k - (fee_bps as Uint<14>); // Result is Uint<14>
+
+    // Calculate products, potentially exceeding Uint<64> * Uint<64> = Uint<128>
+    const old_product = (reserve_in as Uint<128>) * (reserve_out as Uint<128>); // Result Uint<128>
+
+    // new_reserve_in can be up to 2*2^64-1 (needs 65 bits)
+    const new_reserve_in = (reserve_in as Uint<65>) + (amount_in as Uint<65>); // Result Uint<65>
+    // new_reserve_out remains Uint<64>
+    const new_reserve_out = reserve_out - amount_out; // Result Uint<64>
+
+    // new_product can be up to (2^65)*(2^64) approx (needs 129 bits)
+    const new_product = (new_reserve_in as Uint<129>) * (new_reserve_out as Uint<129>); // Result Uint<129>
+
+    // Perform final comparison: new_product * 10000 >= old_product * fee_multiplier
+    // LHS: Uint<129> * Uint<14> => Needs Uint<143>
+    // RHS: Uint<128> * Uint<14> => Needs Uint<142>
+    // Use Uint<144> for safety
+    const scaled_new_product = (new_product as Uint<144>) * (ten_k as Uint<144>);
+    const fee_adjusted_required = (old_product as Uint<144>) * (fee_multiplier as Uint<144>);
+
+    // Compare results using Uint comparison (>= is valid for Uint)
+    return scaled_new_product >= fee_adjusted_required;
+}
+
+export circuit swap(
+    pool_id: Field,
+    token_in: Field,
+    amount_in: Uint<64>,   // Reverted to Uint<64>
+    min_amount_out: Uint<64> // Reverted to Uint<64>
+): Uint<64> { // Reverted return to Uint<64>
+    const pool = pools.lookup(pool_id);
+    assert !field_equals(pool.token0, 0) "Pool does not exist"; // Basic check
+
+    const user_address = disclose(get_user_address());
+
+    // Check verification if required by the pool
+    if (pool.requires_verification) {
+        const is_verified = placeholder_is_user_verified(user_address);
+        assert is_verified "Ethiopian ID verification required for this pool";
+    }
+
+    // Determine swap direction and reserves
+    const is_token0_in = field_equals(token_in, pool.token0);
+    assert is_token0_in || field_equals(token_in, pool.token1) "Input token not in pool";
+
+    const reserve_in = is_token0_in ? pool.reserve0 : pool.reserve1; // Uint<64>
+    const reserve_out = is_token0_in ? pool.reserve1 : pool.reserve0; // Uint<64>
+
+    // Calculate amount_out on-chain using Field arithmetic and modular inverse
+    const fee_factor = (10000 - (pool.fee as Uint<64>)) as Field; // Use Uint<64>
+    const amount_in_field = amount_in as Field;
+    const reserve_in_field = reserve_in as Field;
+    const reserve_out_field = reserve_out as Field;
+    const ten_k_field = 10000 as Field;
+
+    const amount_in_with_fee = amount_in_field * fee_factor;
+    const numerator = amount_in_with_fee * reserve_out_field;
+    const denominator = (reserve_in_field * ten_k_field) + amount_in_with_fee;
+
+    // Perform division using modular inverse: amount_out = numerator * inverse(denominator)
+    const denominator_inverse = calculate_modular_inverse(denominator);
+    const amount_out_field = numerator * denominator_inverse;
+
+    // Cast result back to Uint<64>
+    const amount_out = amount_out_field as Uint<64>; // Cast to Uint<64>
+
+    // Verify the calculated amount_out meets the minimum requirement
+    assert amount_out >= min_amount_out "Calculated amount_out is less than minimum required amount";
+
+    // Verify the swap math using the calculated amount_out
+    // (K constant check with fee, multiplication-based)
+    const valid_math = verify_swap_math_with_fee(reserve_in, reserve_out, amount_in, amount_out, pool.fee);
+    assert valid_math "Invalid swap math based on calculated amount_out and constant product formula with fee";
+
+    // Calculate new reserves using calculated amount_out
+    const new_reserve_in = reserve_in + amount_in; // Uint<64> + Uint<64> -> Uint<0..2^65-2>
+    const new_reserve_out = reserve_out - amount_out; // Uint<64> - Uint<64> -> Uint<64>
+
+    // Add assertions to prevent underflow/overflow before assignment
+    assert new_reserve_in >= reserve_in "Reserve overflow during swap addition";
+    assert reserve_out >= amount_out "Reserve underflow during swap subtraction";
+
+    const updated_pool = LiquidityPool {
+        token0: pool.token0,
+        token1: pool.token1,
+        reserve0: (is_token0_in ? new_reserve_in : new_reserve_out) as Uint<64>, // Cast back to Uint<64>
+        reserve1: (is_token0_in ? new_reserve_out : new_reserve_in) as Uint<64>, // Cast back to Uint<64>
+        creator: pool.creator,
+        total_shares: pool.total_shares,
+        requires_verification: pool.requires_verification,
+        fee: pool.fee
+    };
+
+    pools.insert(pool_id, updated_pool);
+
+    // TODO: Handle token transfers using Zswap functions
+    // receive(user_input_coin); send(output_coin_to_user);
+
+    return amount_out;
+}
+
+// Placeholder witness for amount_out calculation (implementation needed off-chain)
+// witness calculate_amount_out(reserve_in: Uint<128>, reserve_out: Uint<128>, amount_in: Uint<128>, fee_bps: Uint<16>): Uint<128>; // Removed
+
+// ------------------------------
+// Liquidity Provision (Division-Free)
+// ------------------------------
+
+/* // Commenting out add_liquidity due to Uint<128> compiler issue
+export circuit add_liquidity(
+    pool_id: Field,
+    amount0_desired: Uint<128>,
+    amount1_desired: Uint<128>,
+    amount0_min: Uint<128>,
+    amount1_min: Uint<128>
+): [Uint<128>, Uint<128>, Uint<128>] { // Returns amount0, amount1, shares
+    const pool = pools.lookup(pool_id);
+    assert !field_equals(pool.token0, 0) "Pool does not exist";
+
+    const user_address = disclose(get_user_address());
+
+    // Check verification if required
+    if (pool.requires_verification) {
+        const is_verified = placeholder_is_user_verified(user_address);
+        assert is_verified "Ethiopian ID verification required for this pool";
+    }
+
+    // Calculate amounts based on current ratio, avoiding division
+    // amount1 = amount0_desired * reserve1 / reserve0
+    // amount0 = amount1_desired * reserve0 / reserve1
+    // Must be calculated off-chain or approximated.
+
+    // --- WORKAROUND: Assume amounts calculated off-chain or via witness ---
+    // For now, we proceed assuming amounts are provided correctly, respecting the ratio.
+    // Let's use desired amounts and check against min amounts.
+    // A real implementation needs calculate_liquidity_amounts witness.
+    const [amount0, amount1] = calculate_liquidity_amounts(
+        pool.reserve0, pool.reserve1, amount0_desired, amount1_desired
+    );
+
+    assert amount0 >= amount0_min && amount1 >= amount1_min "Amounts less than minimum required";
+
+    // Calculate shares minted (proportional to amount added relative to total)
+    // shares = min(amount0 * total_shares / reserve0, amount1 * total_shares / reserve1)
+    // Avoid division: Check proportionality
+    // shares * reserve0 <= amount0 * total_shares
+    // shares * reserve1 <= amount1 * total_shares
+    // Let's simplify: shares = amount0 * total_shares / reserve0 (requires division)
+
+    // --- WORKAROUND: Assume shares calculated off-chain or via witness ---\
+    const shares = calculate_liquidity_shares(pool.reserve0, pool.reserve1, pool.total_shares, amount0, amount1);
+    assert shares > 0 "Must mint positive shares";
+
+    // Update user shares
+    const share_key = create_share_key(user_address, pool_id);
+    const current_shares = user_shares.lookup(share_key);
+    user_shares.insert(share_key, (current_shares + shares) as Uint<64>); // Cast to Uint<64>
+
+    // Update pool reserves and total shares
+    const updated_pool = LiquidityPool {
+        token0: pool.token0,
+        token1: pool.token1,
+        reserve0: (pool.reserve0 + amount0) as Uint<128>, // Cast to Uint<128>
+        reserve1: (pool.reserve1 + amount1) as Uint<128>, // Cast to Uint<128>
+        creator: pool.creator,
+        total_shares: (pool.total_shares + shares) as Uint<128>, // Cast to Uint<128>
+        requires_verification: pool.requires_verification,
+        fee: pool.fee
+    };
+
+    pools.insert(pool_id, updated_pool);
+
+    // TODO: Handle token transfers from user using Zswap
+
+    return [amount0, amount1, shares];
+}
+*/
+
+// Placeholder witnesses for liquidity calculations
+witness calculate_liquidity_amounts(reserve0: Uint<64>, reserve1: Uint<64>, amount0_desired: Uint<64>, amount1_desired: Uint<64>): [Uint<64>, Uint<64>];
+witness calculate_liquidity_shares(reserve0: Uint<64>, reserve1: Uint<64>, total_shares: Uint<64>, amount0: Uint<64>, amount1: Uint<64>): Uint<64>;
+
+// ------------------------------
+// View Functions
+// ------------------------------
+
+export circuit get_pool_count(): Field {
+    return pool_count;
+}
+
+export circuit get_pool_info(pool_id: Field): LiquidityPool {
+    return pools.lookup(pool_id);
+}
+
+export circuit get_user_shares(pool_id: Field, user_address: Field): Uint<64> {
+    const share_key = create_share_key(user_address, pool_id);
+    return user_shares.lookup(share_key);
+}
+
+struct LiquidityPoolWitness {
+    token0: Field,
+    token1: Field,
+    reserve0: Uint<64>, // Reverted to Uint<64>
+    reserve1: Uint<64>, // Reverted to Uint<64>
+    total_shares: Uint<64>, // Reverted to Uint<64>
+    requires_verification: Boolean,
+    fee: Uint<16>,
+}
+
+struct WithdrawalAmountsWitness {
+    amount0_out: Uint<64>, // Reverted to Uint<64>
+    amount1_out: Uint<64>, // Reverted to Uint<64>
+}
+
+/* // Temporarily commented out due to compactc v0.22.0 compiler issue (likely related to Uint<128>)
+// Remove liquidity from a pool
+circuit remove_liquidity<Public Storage Map<Field, LiquidityPool>>(
+    pools: Map<Field, LiquidityPool>, // Replaced NestedMap with Map
+    pool_id: Field,
+    shares_to_burn: Uint<128>,
+    amount0_min: Uint<128>,
+    amount1_min: Uint<128>,
+    recipient: Field,
+    // Witness data
+    user: Field,
+    user_sig: Signature,
+    pool: LiquidityPoolWitness,
+    withdrawal_amounts: WithdrawalAmountsWitness
+): (Uint<128>, Uint<128>) {
+
+// ... existing code ...
+circuit hash_remove_liquidity_inputs(
+    pool_id: Field, // Replaced LiquidityPoolId
+    shares_to_burn: Uint<128>,
+    amount0_min: Uint<128>,
+    amount1_min: Uint<128>,
+    recipient: Field
+): Field {
+// ... existing code ...
+}
+*/
+
+// Initialization
+// ------------------------------
+
+export circuit initialize(registry_address: Field): [] {
+    signature_registry_address = registry_address;
+    pool_count = 0; // Initialize pool_count here
+}

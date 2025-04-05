@@ -1,0 +1,206 @@
+{
+  "circuits": [
+    {
+      "name": "create_pool",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "token0",
+          "type": {
+            "type-name": "Field"
+          }
+        },
+        {
+          "name": "token1",
+          "type": {
+            "type-name": "Field"
+          }
+        },
+        {
+          "name": "initial_reserve0",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        },
+        {
+          "name": "initial_reserve1",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        },
+        {
+          "name": "requires_verification",
+          "type": {
+            "type-name": "Boolean"
+          }
+        },
+        {
+          "name": "fee_bps",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 65535
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Field"
+      }
+    },
+    {
+      "name": "swap",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "pool_id",
+          "type": {
+            "type-name": "Field"
+          }
+        },
+        {
+          "name": "token_in",
+          "type": {
+            "type-name": "Field"
+          }
+        },
+        {
+          "name": "amount_in",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        },
+        {
+          "name": "min_amount_out",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Uint",
+        "maxval": 18446744073709551615
+      }
+    },
+    {
+      "name": "get_pool_count",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Field"
+      }
+    },
+    {
+      "name": "get_pool_info",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "pool_id",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Struct",
+        "name": "LiquidityPool",
+        "elements": [
+          {
+            "name": "token0",
+            "type": {
+              "type-name": "Field"
+            }
+          },
+          {
+            "name": "token1",
+            "type": {
+              "type-name": "Field"
+            }
+          },
+          {
+            "name": "reserve0",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "reserve1",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "creator",
+            "type": {
+              "type-name": "Field"
+            }
+          },
+          {
+            "name": "total_shares",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "requires_verification",
+            "type": {
+              "type-name": "Boolean"
+            }
+          },
+          {
+            "name": "fee",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 65535
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "get_user_shares",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "pool_id",
+          "type": {
+            "type-name": "Field"
+          }
+        },
+        {
+          "name": "user_address",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Uint",
+        "maxval": 18446744073709551615
+      }
+    },
+    {
+      "name": "initialize",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "registry_address",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    }
+  ]
+}
