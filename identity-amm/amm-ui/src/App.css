@@ -1,0 +1,83 @@
+.app-container {
+  width: 100%;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 20px; 
+  width: calc(100% - 40px); /* Account for padding */
+  box-sizing: border-box; /* Include padding in width */
+}
+
+.app-header h1 {
+  margin: 0;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Add gap between items */
+}
+
+.wallet-info button {
+  padding: 8px 15px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  /* margin-left: 10px; Removed for gap */
+}
+
+.wallet-info button:disabled {
+  background-color: var(--button-disabled-bg);
+  cursor: not-allowed;
+}
+
+.wallet-info span {
+  font-size: 0.9em;
+  /* margin-right: 10px; Removed for gap */
+}
+
+.verification-status-container {
+  min-width: 150px; /* Give space for the status text */
+  text-align: right;
+}
+
+.verification-status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.verification-status.loading {
+  color: #aaa;
+}
+
+.verification-status.verified {
+  background-color: #28a745;
+  color: white;
+}
+
+.verification-status.not-verified {
+  background-color: #dc3545;
+  color: white;
+}
+
+.wallet-error {
+  color: #ff6b6b; /* Light red for errors */
+  margin-left: 15px;
+  font-size: 0.85em;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center main content like Swap component */
+  width: 100%;
+} 

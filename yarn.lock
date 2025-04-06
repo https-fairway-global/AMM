@@ -1978,11 +1978,27 @@ __metadata:
   resolution: "@identity-amm/amm-ui@workspace:identity-amm/amm-ui"
   dependencies:
     "@identity-amm/amm-api": "workspace:*"
+    "@identity-amm/signature-registry-contract": "workspace:*"
+    "@midnight-ntwrk/compact-runtime": "npm:^0.7.0"
+    "@midnight-ntwrk/dapp-connector-api": "npm:^1.2.3"
+    "@midnight-ntwrk/ledger": "npm:^3.0.6"
+    "@midnight-ntwrk/midnight-js-contracts": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-network-id": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-types": "npm:0.2.5"
+    "@midnight-ntwrk/midnight-js-utils": "npm:0.2.5"
+    "@midnight-ntwrk/wallet": "npm:^3.7.5"
+    "@midnight-ntwrk/wallet-api": "npm:^3.5.0"
     "@types/react": "npm:^18.2.15"
     "@types/react-dom": "npm:^18.2.7"
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
     "@typescript-eslint/parser": "npm:^6.0.0"
     "@vitejs/plugin-react": "npm:^4.0.3"
+    axios: "npm:^1.8.4"
     eslint: "npm:^8.45.0"
     eslint-plugin-react-hooks: "npm:^4.6.0"
     eslint-plugin-react-refresh: "npm:^0.4.3"
@@ -2024,6 +2040,7 @@ __metadata:
     "@midnight-ntwrk/compact-runtime": "npm:^0.7.0"
     eslint: "npm:^8.52.0"
     jest: "npm:^29.7.0"
+    pino-http: "npm:^10.4.0"
     typescript: "npm:^5.2.2"
   languageName: unknown
   linkType: soft
@@ -4765,6 +4782,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:^1.8.4":
+  version: 1.8.4
+  resolution: "axios@npm:1.8.4"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/a10f0dd836613924e48cf03dc2eff3fd21b14f764807aedaee4880a70c0f142aaebdb21da7ce27104d4c16ca00d0e452a20a20851f60e385a8d5bad1ae909d46
+  languageName: node
+  linkType: hard
+
 "b4a@npm:^1.6.4":
   version: 1.6.7
   resolution: "b4a@npm:1.6.7"
@@ -7433,7 +7461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.0.0":
+"follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.6":
   version: 1.15.9
   resolution: "follow-redirects@npm:1.15.9"
   peerDependenciesMeta:
@@ -10739,6 +10767,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pino-http@npm:^10.4.0":
+  version: 10.4.0
+  resolution: "pino-http@npm:10.4.0"
+  dependencies:
+    get-caller-file: "npm:^2.0.5"
+    pino: "npm:^9.0.0"
+    pino-std-serializers: "npm:^7.0.0"
+    process-warning: "npm:^4.0.0"
+  checksum: 10/2e9b865fd30eae50019e947d02e8630aea16f5495159fa984087d3d1e3f3fb0dc9a99cfeb86d04e2c48cc3e4ac90f4aaa87f1bb7752d8fc1f2b6b0d08993cceb
+  languageName: node
+  linkType: hard
+
 "pino-pretty@npm:^10.2.0, pino-pretty@npm:^10.2.3":
   version: 10.3.1
   resolution: "pino-pretty@npm:10.3.1"
@@ -10777,7 +10817,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:*":
+"pino@npm:*, pino@npm:^9.0.0":
   version: 9.6.0
   resolution: "pino@npm:9.6.0"
   dependencies:
@@ -11040,6 +11080,13 @@ __metadata:
     forwarded: "npm:0.2.0"
     ipaddr.js: "npm:1.9.1"
   checksum: 10/f24a0c80af0e75d31e3451398670d73406ec642914da11a2965b80b1898ca6f66a0e3e091a11a4327079b2b268795f6fa06691923fef91887215c3d0e8ea3f68
+  languageName: node
+  linkType: hard
+
+"proxy-from-env@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "proxy-from-env@npm:1.1.0"
+  checksum: 10/f0bb4a87cfd18f77bc2fba23ae49c3b378fb35143af16cc478171c623eebe181678f09439707ad80081d340d1593cd54a33a0113f3ccb3f4bc9451488780ee23
   languageName: node
   linkType: hard
 

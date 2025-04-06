@@ -1,0 +1,38 @@
+/* Dark Theme Global Styles */
+:root {
+  --background-color: #1a1a1a; /* Dark background */
+  --text-color: #e1e1e1; /* Light text */
+  --component-bg: #2a2a2a; /* Slightly lighter dark for components */
+  --border-color: #444;
+  --input-bg: #333;
+  --input-text: #fff;
+  --button-bg: #007bff;
+  --button-text: #fff;
+  --button-disabled-bg: #555;
+  --select-bg: #444;
+  --header-color: #fff;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center children horizontally */
+  padding-top: 20px;
+  min-height: 100vh;
+}
+
+h1 {
+  color: var(--header-color);
+  text-align: center;
+} 

@@ -1,0 +1,66 @@
+.swap-container {
+  background-color: var(--component-bg);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  color: var(--text-color);
+}
+
+.swap-container h2 {
+  margin-top: 0;
+  text-align: center;
+  color: var(--header-color);
+}
+
+.swap-input-group {
+  margin-bottom: 15px;
+}
+
+.swap-input-group label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  color: var(--text-color);
+}
+
+/* Style for the select dropdown */
+.swap-input-group select {
+  font-weight: bold;
+  padding: 8px 5px;
+  margin-right: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--select-bg);
+  color: var(--input-text);
+}
+
+/* Style for the number input */
+.swap-input-group input[type="number"] {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  flex-grow: 1;
+  text-align: right;
+  background-color: var(--input-bg);
+  color: var(--input-text);
+}
+
+.swap-container button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.swap-container button:disabled {
+  background-color: var(--button-disabled-bg);
+  cursor: not-allowed;
+} 

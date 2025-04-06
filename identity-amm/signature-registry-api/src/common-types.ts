@@ -6,40 +6,44 @@
 
 import { type MidnightProviders } from '@midnight-ntwrk/midnight-js-types';
 import { type FoundContract, type Contract as GenericContractConstraint, type Witnesses as GenericWitnessesConstraint } from '@midnight-ntwrk/midnight-js-contracts';
-import { Contract } from '@identity-amm/signature-registry-contract'; // Import the Contract class directly
-// Field type is represented as bigint in TypeScript
+import { Contract, witnesses as actualContractWitnesses } from '@identity-amm/signature-registry-contract'; // Import the Contract class and actual witnesses
+import { type CurvePoint, type ContractAddress } from '@midnight-ntwrk/compact-runtime'; // Import CurvePoint and ContractAddress
 
-// 1. Define the Private State type for our specific contract
-export type VerificationRegistryPrivateState = Record<string, never>; // Empty object type
+// 1. Define the Private State type matching the contract's witnesses
+export type IdentityRegistryPrivateState = {
+    readonly localSecretKey: Uint8Array; 
+};
 
-// 2. Define the shape of the Witnesses object for our contract
-// This needs to match the structure expected by the CompactContractClass instance
-// Based on generated index.cjs, it expects parse_fayda_credential, user_secret_key, current_time
-// Let's define a basic structure; the actual implementation is in the API logic.
-interface VerificationRegistryWitnesses extends GenericWitnessesConstraint<VerificationRegistryPrivateState> {
-    parse_fayda_credential: (...args: any[]) => [VerificationRegistryPrivateState, any]; // Simplified args/return
-    user_secret_key: (...args: any[]) => [VerificationRegistryPrivateState, any];
-    current_time: (...args: any[]) => [VerificationRegistryPrivateState, any];
-    // Add other witness functions if defined in the contract
+// 2. Define the shape of the Witnesses object matching the contract's index.ts
+// Use the actual imported witnesses type if available, otherwise define explicitly
+// export type IdentityRegistryWitnesses = typeof actualContractWitnesses;
+// OR define explicitly if the above doesn't work:
+export interface IdentityRegistryWitnesses extends GenericWitnessesConstraint<IdentityRegistryPrivateState> {
+    local_secret_key: (...args: any[]) => [IdentityRegistryPrivateState, Uint8Array];
 }
 
 // 3. Define the specific Contract Instance type using the imported class and our types
-// This asserts that an instance of CompactContractClass conforms to the generic constraint
-export type VerificationRegistryContractInstance = GenericContractConstraint<VerificationRegistryPrivateState, VerificationRegistryWitnesses>;
+export type IdentityRegistryContract = GenericContractConstraint<IdentityRegistryPrivateState, IdentityRegistryWitnesses>;
 
 // 4. Define related types based on the correctly typed instance
-export type VerificationRegistryPrivateStates = Record<string, VerificationRegistryPrivateState>;
-export type VerificationRegistryCircuitKeys = Exclude<keyof VerificationRegistryContractInstance['impureCircuits'], number | symbol>;
-export type VerificationRegistryProviders = MidnightProviders<VerificationRegistryCircuitKeys, VerificationRegistryPrivateStates>;
+// Need to get the actual circuit keys from the contract definition
+// For now, assume 'register' is the only key based on registry.compact
+export type IdentityRegistryCircuitKeys = 'register'; // Adjust if other circuits exist
+export type IdentityRegistryPrivateStateSchema = { 
+    identityRegistry: IdentityRegistryPrivateState; // Key used in deployContract/findDeployedContract
+};
+// Use the correct schema for MidnightProviders
+export type IdentityRegistryProviders = MidnightProviders<IdentityRegistryCircuitKeys, IdentityRegistryPrivateStateSchema>;
 
 // 5. Define the Deployed Contract type using the specific instance type
-export type DeployedVerificationRegistryContract = FoundContract<VerificationRegistryPrivateState, VerificationRegistryContractInstance>;
+export type DeployedIdentityRegistryContract = FoundContract<IdentityRegistryPrivateState, IdentityRegistryContract>;
 
-// Derived state - what the API layer provides based on contract state
-export type VerificationRegistryDerivedState = {
-  readonly verifiedUserAddress: string; // Example derived state field
+// 6. Define the Derived state based on API needs
+export type IdentityRegistryDerivedState = {
+  readonly whoami: string; // Example derived state field
 };
 
-export const emptyState: VerificationRegistryDerivedState = {
-  verifiedUserAddress: 'unknown',
+// 7. Define the empty state
+export const emptyState: IdentityRegistryDerivedState = {
+  whoami: 'unknown',
 }; 
