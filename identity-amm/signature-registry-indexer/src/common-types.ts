@@ -1,5 +1,12 @@
-import type { ContractState } from '@midnight-ntwrk/ledger';
+import type { ContractState} from '@midnight-ntwrk/ledger';
 import { type CurvePoint } from '@midnight-ntwrk/compact-runtime';
+import {
+  type PublicDataProvider,
+  type PrivateStateProvider,
+  type ProofProvider,
+  type ZKConfigProvider,
+  type WalletProvider,
+} from '@midnight-ntwrk/midnight-js-types';
 
 export type Config = {
   indexerUri: string;
@@ -38,4 +45,15 @@ export type StreamElementData = {
 export type ExtractedContractRecord = {
   walletPublicKey: string;
   signingPublicKey: CurvePoint;
+};
+
+export type IdentityRegistryCircuitKeys = 'register' | 'get_signing_key';
+export type IdentityRegistryPrivateStateSchema = { identityRegistry: never };
+
+export type IdentityRegistryProviders = {
+  readonly publicDataProvider: PublicDataProvider;
+  readonly privateStateProvider: PrivateStateProvider<IdentityRegistryPrivateStateSchema>;
+  readonly proofProvider: ProofProvider<IdentityRegistryCircuitKeys>;
+  readonly zkConfigProvider: ZKConfigProvider<IdentityRegistryCircuitKeys>;
+  readonly walletProvider: WalletProvider;
 };

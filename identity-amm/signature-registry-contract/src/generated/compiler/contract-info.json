@@ -1,14 +1,28 @@
 {
   "circuits": [
     {
-      "name": "register_verification",
+      "name": "register",
       "pure": false,
       "arguments": [
         {
-          "name": "credential_json",
+          "name": "signing_key",
           "type": {
-            "type-name": "Opaque",
-            "tsType": "string"
+            "type-name": "Struct",
+            "name": "CurvePoint",
+            "elements": [
+              {
+                "name": "x",
+                "type": {
+                  "type-name": "Field"
+                }
+              },
+              {
+                "name": "y",
+                "type": {
+                  "type-name": "Field"
+                }
+              }
+            ]
           }
         }
       ],
@@ -19,33 +33,33 @@
       }
     },
     {
-      "name": "is_user_verified",
+      "name": "get_signing_key",
       "pure": false,
       "arguments": [
         {
-          "name": "user_address",
+          "name": "wallet_address",
           "type": {
             "type-name": "Field"
           }
         }
       ],
       "result-type": {
-        "type-name": "Boolean"
-      }
-    },
-    {
-      "name": "get_verification_expiration",
-      "pure": false,
-      "arguments": [
-        {
-          "name": "user_address",
-          "type": {
-            "type-name": "Field"
+        "type-name": "Struct",
+        "name": "CurvePoint",
+        "elements": [
+          {
+            "name": "x",
+            "type": {
+              "type-name": "Field"
+            }
+          },
+          {
+            "name": "y",
+            "type": {
+              "type-name": "Field"
+            }
           }
-        }
-      ],
-      "result-type": {
-        "type-name": "Field"
+        ]
       }
     }
   ]

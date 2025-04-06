@@ -8,16 +8,42 @@
 // export * from './generated/registry'; // Example export 
 
 // Import the generated CommonJS module
+// Adjust path based on actual compactc output structure
 import generated = require('./generated/contract/index.cjs');
+import { type WitnessContext } from '@midnight-ntwrk/compact-runtime';
+import { type Contract as ContractType, type Witnesses as GenericWitnesses } from './generated/contract/index.d.cjs'; // Assuming types are in .d.cts
 
-// Export only the Contract class value
+// Export the generated Contract class directly
 export const Contract = generated.Contract;
 
-// Consumers will need to instantiate it with their specific types.
-// We no longer export ledger directly, consumers can get it from the Contract instance if needed.
+// Export the generated ledger function if it exists (needed by API)
+// Check ./generated/contract/index.cjs to confirm export name
+export const ledger = generated.ledger; 
 
-// Export other potentially useful generated items if they exist
-// export const witnesses = generated.witnesses; // Check if 'witnesses' is exported by index.cjs
+// Define the Private State type (empty for this contract)
+export type SignatureRegistryPrivateState = Record<string, never>;
+
+// Define the Witnesses type matching the contract
+export interface SignatureRegistryWitnesses extends GenericWitnesses<SignatureRegistryPrivateState> {
+    own_wallet_public_key(context: WitnessContext<any, SignatureRegistryPrivateState>): [SignatureRegistryPrivateState, bigint]; // Returns Field (bigint)
+}
+
+// Define the actual witness implementations (placeholders for now)
+// The API using this contract needs to provide the real implementations.
+export const witnesses: SignatureRegistryWitnesses = {
+    own_wallet_public_key: ({ privateState }) => {
+        // Placeholder implementation - returns 0n
+        // A real implementation would derive/fetch the actual wallet key
+        console.warn("[CONTRACT WITNESS] Using placeholder own_wallet_public_key witness returning 0n");
+        return [privateState, 0n];
+    },
+};
+
+// Type alias for consumers using the specific contract
+export type SignatureRegistryContract =
+    ContractType<SignatureRegistryPrivateState, SignatureRegistryWitnesses>;
+
+// Re-export other useful generated items if needed and available
 // export const pureCircuits = generated.pureCircuits;
 // export const contractReferenceLocations = generated.contractReferenceLocations;
 

@@ -1,48 +1,37 @@
 import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 
 export type Witnesses<T> = {
-  parse_fayda_credential(context: __compactRuntime.WitnessContext<Ledger, T>,
-                         credential_json_0: string): [T, { id: bigint,
-                                                           issuer: bigint,
-                                                           issuance_date: bigint,
-                                                           valid_until: bigint,
-                                                           subject_id: bigint,
-                                                           citizenship: bigint,
-                                                           region: bigint,
-                                                           signature: bigint[]
-                                                         }];
-  user_secret_key(context: __compactRuntime.WitnessContext<Ledger, T>): [T, bigint];
-  current_time(context: __compactRuntime.WitnessContext<Ledger, T>): [T, bigint];
+  own_wallet_public_key(context: __compactRuntime.WitnessContext<Ledger, T>): [T, bigint];
 }
 
 export type ImpureCircuits<T> = {
-  register_verification(context: __compactRuntime.CircuitContext<T>,
-                        credential_json_0: string): __compactRuntime.CircuitResults<T, []>;
-  is_user_verified(context: __compactRuntime.CircuitContext<T>,
-                   user_address_0: bigint): __compactRuntime.CircuitResults<T, boolean>;
-  get_verification_expiration(context: __compactRuntime.CircuitContext<T>,
-                              user_address_0: bigint): __compactRuntime.CircuitResults<T, bigint>;
+  register(context: __compactRuntime.CircuitContext<T>,
+           signing_key_0: { x: bigint, y: bigint }): __compactRuntime.CircuitResults<T, []>;
+  get_signing_key(context: __compactRuntime.CircuitContext<T>,
+                  wallet_address_0: bigint): __compactRuntime.CircuitResults<T, { x: bigint,
+                                                                                  y: bigint
+                                                                                }>;
 }
 
 export type PureCircuits = {
 }
 
 export type Circuits<T> = {
-  register_verification(context: __compactRuntime.CircuitContext<T>,
-                        credential_json_0: string): __compactRuntime.CircuitResults<T, []>;
-  is_user_verified(context: __compactRuntime.CircuitContext<T>,
-                   user_address_0: bigint): __compactRuntime.CircuitResults<T, boolean>;
-  get_verification_expiration(context: __compactRuntime.CircuitContext<T>,
-                              user_address_0: bigint): __compactRuntime.CircuitResults<T, bigint>;
+  register(context: __compactRuntime.CircuitContext<T>,
+           signing_key_0: { x: bigint, y: bigint }): __compactRuntime.CircuitResults<T, []>;
+  get_signing_key(context: __compactRuntime.CircuitContext<T>,
+                  wallet_address_0: bigint): __compactRuntime.CircuitResults<T, { x: bigint,
+                                                                                  y: bigint
+                                                                                }>;
 }
 
 export type Ledger = {
-  verifiedUsers: {
+  registeredSigningKeys: {
     isEmpty(): boolean;
     size(): bigint;
     member(key_0: bigint): boolean;
-    lookup(key_0: bigint): bigint;
-    [Symbol.iterator](): Iterator<[bigint, bigint]>
+    lookup(key_0: bigint): { x: bigint, y: bigint };
+    [Symbol.iterator](): Iterator<[bigint, { x: bigint, y: bigint }]>
   };
 }
 

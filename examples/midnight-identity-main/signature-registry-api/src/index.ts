@@ -1,16 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
+import pinoHttp from 'pino-http';
 import type { Logger } from 'pino';
+import { type WitnessContext } from '@midnight-ntwrk/compact-runtime';
+import { type IdentityRegistryWitnesses, type IdentityRegistryPrivateStates } from './common-types.js'; // Assuming these types are correct
 
 // Midnight SDK Imports (using paths that worked previously, with workarounds)
-import { type ContractAddress, MidnightProvider } from '@midnight-ntwrk/midnight-js-provider'; // Reverted import path
-import { type DeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
+// import { type MidnightProvider } from '@midnight-ntwrk/midnight-js-types'; // Removed unused import
+// import { type DeployedContract } from '@midnight-ntwrk/midnight-js-contracts'; // Removed unused import
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { NetworkId } from '@midnight-ntwrk/midnight-js-network-id';
+import { type CurvePoint, type ContractAddress } from '@midnight-ntwrk/compact-runtime'; // Import CurvePoint and ContractAddress here
 
 // Local Imports
 import {
@@ -21,7 +25,7 @@ import {
   type IdentityRegistryProviders,
 } from './common-types.js';
 // Correcting the contract import path
-import { Contract, CurvePoint, ledger, witnesses } from '@identity-amm/signature-registry-contract'; 
+import { Contract } from '@identity-amm/signature-registry-contract';
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { combineLatest, map, type Observable, retry, scan } from 'rxjs';
 import * as utils from './utils/index.js';
@@ -35,6 +39,15 @@ const PROVER_URL = process.env.PROVER_URL || 'http://127.0.0.1:6300/';
 // TODO: Confirm the correct URL for ZkConfigProvider. Using localhost as placeholder.
 const ZK_CONFIG_URL = process.env.ZK_CONFIG_URL || 'http://localhost:8891'; 
 // --- End Configuration ---
+
+// Define placeholder witnesses before using them
+const witnesses: IdentityRegistryWitnesses = {
+  own_wallet_public_key: (context: WitnessContext<any, IdentityRegistryPrivateStates>): [IdentityRegistryPrivateStates, bigint] => {
+      console.warn("[WITNESS] own_wallet_public_key: Using placeholder 0n. Needs real wallet implementation.");
+      return [undefined as never, BigInt(0)]; // Use BigInt constructor
+  },
+  // Add index signature if required by IdentityRegistryWitnesses type
+} as IdentityRegistryWitnesses; // Cast necessary if index signature missing
 
 // Use the specific contract type
 const contractDefinition: IdentityRegistryContract = new Contract(witnesses);
@@ -154,37 +167,33 @@ export class IdentityAPI implements DeployedIdentityAPI {
 async function initializeServer() {
   logger.info('Initializing Signature Registry API server...');
 
-  let midnightProvider: MidnightProvider;
+  let providers: IdentityRegistryProviders;
+
   try {
     logger.info('Initializing Midnight providers...');
     const fetchZkConfigProvider = new FetchZkConfigProvider(ZK_CONFIG_URL);
     const proofProvider = httpClientProofProvider(PROVER_URL);
-    const publicDataProvider = indexerPublicDataProvider(INDEXER_URL, INDEXER_URL); 
-    const privateStateProvider = levelPrivateStateProvider(); 
+    const publicDataProvider = indexerPublicDataProvider(INDEXER_URL, INDEXER_URL);
+    const privateStateProvider = levelPrivateStateProvider(/* Add config if needed */);
+    const walletProvider = {} as any; // Placeholder
 
-    midnightProvider = new MidnightProvider({
-      networkId: NETWORK_ID,
-      privateStateProvider,
-      publicDataProvider,
-      proofProvider,
-      zkConfigProvider: fetchZkConfigProvider,
-    });
     logger.info('Midnight providers initialized.');
 
+     // Assign providers here after successful initialization
+     providers = {
+        publicDataProvider,
+        privateStateProvider,
+        proofProvider,
+        zkConfigProvider: fetchZkConfigProvider,
+        walletProvider: walletProvider
+    };
+
   } catch (error) {
-    logger.error({ err: error }, "Failed to initialize MidnightProvider");
-    process.exit(1);
+    logger.error({ err: error }, "Failed to initialize Midnight providers");
+    process.exit(1); // Exit if providers fail to initialize
   }
 
-  const providers: IdentityRegistryProviders = {
-      midnightProvider,
-      publicDataProvider: midnightProvider.publicDataProvider,
-      privateStateProvider: midnightProvider.privateStateProvider,
-      proofProvider: midnightProvider.proofProvider,
-      zkConfigProvider: midnightProvider.zkConfigProvider,
-      wallet: midnightProvider.wallet, // Assuming wallet is part of the provider
-  };
-
+  // Now 'providers' is guaranteed to be assigned if the above try block succeeded.
   try {
     if (SIGNATURE_REGISTRY_CONTRACT_ADDRESS_ENV) {
       logger.info(`Found existing contract address in ENV: ${SIGNATURE_REGISTRY_CONTRACT_ADDRESS_ENV}`);
@@ -196,15 +205,15 @@ async function initializeServer() {
       // NOTE: In a real setup, you'd want to persist this new address!
     }
   } catch (error) {
-      logger.error({ err: error }, "Failed to deploy or subscribe to the Signature Registry contract");
-      process.exit(1);
+    logger.error({ err: error }, "Failed to deploy or subscribe to the Signature Registry contract");
+    process.exit(1);
   }
 
   // --- Express App Setup ---
   const app = express();
   app.use(cors());
   app.use(express.json());
-  app.use(pino.Http({ logger }));
+  app.use(pinoHttp({ logger }));
 
   // Basic readiness probe
   app.get('/', (_req, res) => {
@@ -263,4 +272,3 @@ initializeServer().catch(error => {
 // Export necessary types/classes if needed by other modules
 export * from './utils/index.js';
 export * from './common-types.js';
-export { IdentityAPI }; // Export the class
