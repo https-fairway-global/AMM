@@ -14,7 +14,6 @@ import { NetworkId } from '@midnight-ntwrk/ledger';
 import {
     deployContract as deployContractFn,
     type DeployContractOptions,
-    type DeployContractOptionsWithPrivateState,
 } from '@midnight-ntwrk/midnight-js-contracts';
 import type {
     VerifierKey,
@@ -211,15 +210,15 @@ async function createProviders(): Promise<DeploymentProviders> {
     console.log('Using seed (first 32 bytes, hex):', seed);
 
     console.log('\nBuilding wallet...');
-    // Pass the NetworkId from ledger for type compatibility, even though it's set globally
+    // Use non-deprecated WalletBuilder.build, pass arguments in correct order
     const wallet = await WalletBuilder.build(
         CONFIG.indexer,
         CONFIG.indexerWs,
         CONFIG.proofServer,
         CONFIG.node,
-        seed,
-        NetworkId.TestNet, // Use NetworkId from ledger import here ONLY for type checking
-        'info' 
+        seed,                // 5th argument is seed
+        NetworkId.TestNet,   // 6th argument is NetworkId (from zswap import)
+        undefined            // 7th argument is optional minLogLevel
     );
 
     console.log('\nStarting wallet and waiting for sync...');
@@ -274,15 +273,14 @@ async function createProviders(): Promise<DeploymentProviders> {
     const finalState = await firstValueFrom(wallet.state());
     console.log('\n=== Wallet State ===');
     console.log('Coin Public Key (Bech32m):', finalState.coinPublicKey);
-    console.log('Coin Public Key (Legacy Hex):', finalState.coinPublicKeyLegacy);
     console.log('Available Coins:', finalState.availableCoins?.length ?? 0);
     if (!finalState.availableCoins || finalState.availableCoins.length === 0) {
         console.warn('WARNING: Wallet has no available coins. Deployment might fail. Ensure wallet is funded with tDUST.');
     }
 
-    // Create an adapter that conforms to WalletProvider and MidnightProvider
+    // Adapter uses coinPublicKey (non-legacy)
     const walletProviderAdapter: WalletProvider & MidnightProvider = {
-        coinPublicKey: finalState.coinPublicKeyLegacy,
+        coinPublicKey: finalState.coinPublicKey,
         balanceTx: wallet.balanceTransaction.bind(wallet) as any,
         submitTx: wallet.submitTransaction.bind(wallet)
     };
@@ -395,12 +393,13 @@ async function deployContract(
     const deployerSigningKey = sampleSigningKey();
     console.log(`Using deployer SigningKey (Sampled): ${deployerSigningKey}`);
 
-    // Prepare deployment options with explicit type and signingKey, but NO args (based on linter error)
-    const deployOptions: DeployContractOptionsWithPrivateState<any> = {
+    // Let TypeScript infer the options type, add args
+    const deployOptions = {
         contract: contract,
         privateStateId: privateStateId,
         initialPrivateState: initialState,
         signingKey: deployerSigningKey,
+        args: [], // Add missing args property
     };
 
      console.log('Deployment options:', {
@@ -408,6 +407,7 @@ async function deployContract(
          privateStateId: deployOptions.privateStateId,
          initialPrivateState: deployOptions.initialPrivateState,
          signingKey: deployOptions.signingKey,
+         args: deployOptions.args // Log args
      });
 
     try {

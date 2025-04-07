@@ -44,7 +44,7 @@
     "@midnight-ntwrk/midnight-js-types": "^1.0.0",
     "@midnight-ntwrk/midnight-js-utils": "^1.0.0",
     "@midnight-ntwrk/wallet": "^4.0.0",
-    "@midnight-ntwrk/wallet-api": "^4.0.0",
+    "@midnight-ntwrk/wallet-api": "^3.5.0",
     "bip39": "^3.1.0",
     "dotenv": "^16.4.7",
     "fp-ts": "^2.16.1",

@@ -12000,7 +12000,7 @@ __metadata:
     "@midnight-ntwrk/midnight-js-types": "npm:^1.0.0"
     "@midnight-ntwrk/midnight-js-utils": "npm:^1.0.0"
     "@midnight-ntwrk/wallet": "npm:^4.0.0"
-    "@midnight-ntwrk/wallet-api": "npm:^4.0.0"
+    "@midnight-ntwrk/wallet-api": "npm:^3.5.0"
     "@types/bip39": "npm:^3.0.4"
     "@types/dotenv": "npm:^8.2.3"
     "@types/jest": "npm:^29.5.6"
