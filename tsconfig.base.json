@@ -50,5 +50,5 @@
     "composite": true, // Enable constraints that allow a tool like TSBuild to quickly determine if a project has been built
     "declarationMap": true // Generates a sourcemap for each corresponding '.d.ts' file
   },
-  "exclude": ["node_modules", "dist", "**/dist", "**/node_modules"]
+  "exclude": ["node_modules", "dist", "**/dist", "**/node_modules", "examples"]
 }
