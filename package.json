@@ -29,6 +29,7 @@
     "@midnight-ntwrk/zswap": "^3.0.6"
   },
   "dependencies": {
+    "@cosmjs/encoding": "^0.33.1",
     "@midnight-ntwrk/compact-runtime": "^0.7.0",
     "@midnight-ntwrk/dapp-connector-api": "^1.2.3",
     "@midnight-ntwrk/ledger": "^3.0.6",

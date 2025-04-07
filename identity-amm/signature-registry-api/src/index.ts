@@ -13,7 +13,8 @@ import cors from 'cors';
 // Pino removed
 
 // Midnight SDK Imports
-import { type ContractAddress, type CurvePoint, type WitnessContext } from '@midnight-ntwrk/compact-runtime'; 
+import { type ContractAddress, type CurvePoint, type WitnessContext } from '@midnight-ntwrk/compact-runtime';
+import { convert_Uint8Array_to_bigint } from '@midnight-ntwrk/compact-runtime';
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
@@ -24,6 +25,9 @@ import { CoinInfo } from '@midnight-ntwrk/ledger';
 import { WalletBuilder } from '@midnight-ntwrk/wallet';
 import type { Wallet } from '@midnight-ntwrk/wallet-api';
 import { NetworkId as ZswapNetworkId } from '@midnight-ntwrk/zswap';
+import { combineLatest, map, type Observable, retry, scan, filter, shareReplay, take, firstValueFrom } from 'rxjs';
+import * as utils from './utils/index.js';
+import { fromBech32 } from '@cosmjs/encoding'; // HYPOTHETICAL IMPORT - VERIFY/INSTALL
 
 // Local Imports
 import {
@@ -39,8 +43,6 @@ import {
 } from './common-types.js'; 
 import { Contract, ledger } from '@identity-amm/signature-registry-contract'; 
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
-import { combineLatest, map, type Observable, retry, scan, filter, shareReplay, take } from 'rxjs';
-import * as utils from './utils/index.js';
 
 // --- Configuration ---
 const PORT = process.env.PORT || 3002; 
@@ -57,21 +59,26 @@ const ZK_CONFIG_URL = process.env.ZK_CONFIG_URL || 'http://localhost:8891'; // P
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'info') as any; 
 // --- End Configuration ---
 
-// Update witness function signature to match common-types
-function getWitnesses(walletInstance: Wallet): IdentityRegistryWitnesses {
-    return {
-        own_wallet_public_key: (context: WitnessContext<any, IdentityRegistryPrivateState>): [IdentityRegistryPrivateState, bigint] => {
-            console.warn("[WITNESS] own_wallet_public_key: Using placeholder 0n. Needs implementation.");
-            const walletKeyField: bigint = 0n;
-            // Since private state is never, cast undefined to never for the return type
-            return [undefined as never, walletKeyField];
-        },
-    };
-}
-
+// --- Global Variables ---
 let contractDefinition: IdentityRegistryContract;
 let identityApiInstance: IdentityAPI | null = null;
 let wallet: Wallet;
+let apiWalletAddressField: bigint | null = null; // Variable to store the calculated Field
+
+// --- Witness Definition Function ---
+// Synchronously returns the pre-calculated field
+function getWitnesses(): IdentityRegistryWitnesses {
+    return {
+        own_wallet_public_key: (_context: WitnessContext<any, IdentityRegistryPrivateState>): [IdentityRegistryPrivateState, bigint] => {
+            if (apiWalletAddressField === null) {
+                 console.error("[FATAL] own_wallet_public_key witness called before apiWalletAddressField was initialized.");
+                 return [undefined as never, BigInt(0)];
+            }
+             console.log(`[WITNESS] Providing own_wallet_public_key Field: ${apiWalletAddressField}`);
+            return [undefined as never, apiWalletAddressField];
+        },
+    } as IdentityRegistryWitnesses;
+}
 
 // --- IdentityAPI Class --- 
 export class IdentityAPI { 
@@ -183,7 +190,7 @@ async function initializeServer() {
   console.log('[INFO] Initializing Signature Registry API server...');
 
   let providers: IdentityRegistryProviders;
-  let wallet: Wallet;
+  
   try {
     console.log('[INFO] Initializing individual Midnight providers...');
     const zkConfigProvider = new FetchZkConfigProvider<IdentityRegistryCircuitKeys>(ZK_CONFIG_URL);
@@ -191,7 +198,7 @@ async function initializeServer() {
     const publicDataProviderImpl = indexerPublicDataProvider(INDEXER_HTTP_URL, INDEXER_WSS_URL);
     const privateStateProviderImpl = levelPrivateStateProvider<IdentityRegistryPrivateStateSchema>();
 
-    // Always build wallet from seed
+    // Build wallet from seed
     console.warn('[WARN] Building wallet from seed. WALLET_SEED env var should be set for persistence/security.');
     wallet = await WalletBuilder.buildFromSeed(
         INDEXER_HTTP_URL,
@@ -204,21 +211,46 @@ async function initializeServer() {
     );
     console.log('[INFO] Wallet instance built from seed.');
 
+    // --- Calculate apiWalletAddressField --- 
+    console.log('[INFO] Fetching initial wallet state to derive address Field...');
+    const initialState = await firstValueFrom(wallet.state());
+    if (!initialState || !initialState.coinPublicKey) {
+        throw new Error("Failed to get initial wallet state or coinPublicKey.");
+    }
+    const coinPublicKeyString = initialState.coinPublicKey;
+    console.log(`[DEBUG] Retrieved coinPublicKey string: ${coinPublicKeyString}`);
+
+    // 1. Decode Bech32m public key string to bytes (ASSUMPTION - VERIFY/INSTALL LIBRARY)
+    // This example uses hypothetical fromBech32 from @cosmjs/encoding
+    const { prefix, data: publicKeyBytes } = fromBech32(coinPublicKeyString); // ASSUMPTION
+    // TODO: Optionally verify prefix if needed
+    if (!publicKeyBytes || publicKeyBytes.length === 0) {
+         throw new Error(`Failed to decode coinPublicKey: ${coinPublicKeyString}`);
+    }
+    console.log(`[DEBUG] Decoded public key bytes (length ${publicKeyBytes.length}) with prefix ${prefix}`);
+
+    // 2. Convert bytes to Field (bigint) using the correct utility
+    const bitLength = publicKeyBytes.length * 8;
+    apiWalletAddressField = convert_Uint8Array_to_bigint(bitLength, publicKeyBytes);
+    
+    console.log(`[INFO] Derived apiWalletAddressField: ${apiWalletAddressField}`);
+    // --- End Calculate apiWalletAddressField ---
+
     console.log('[INFO] Individual providers instantiated.');
 
-    // Create adapter objects for WalletProvider and MidnightSubmitProvider
+    // Create adapter objects
     const walletProviderAdapter: WalletProvider = {
-        coinPublicKey: "PLACEHOLDER_COIN_PUBLIC_KEY",
+        coinPublicKey: coinPublicKeyString, 
         balanceTx: wallet.balanceTransaction.bind(wallet) as any,
     };
     const midnightSubmitProviderAdapter: MidnightSubmitProvider = {
         submitTx: wallet.submitTransaction.bind(wallet),
     };
 
-    // Initialize contractDefinition with witnesses
-    contractDefinition = new Contract(getWitnesses(wallet));
+    // Initialize contractDefinition AFTER apiWalletAddressField is ready
+    contractDefinition = new Contract(getWitnesses());
 
-    // Assemble providers object using the adapter objects
+    // Assemble providers object
     providers = {
       zkConfigProvider,
       proofProvider: proofProviderImpl,
@@ -228,12 +260,11 @@ async function initializeServer() {
       midnightProvider: midnightSubmitProviderAdapter,
     };
     console.log('[INFO] Providers object assembled.');
-
-    console.log('[INFO] Wallet initialized.');
+    console.log('[INFO] Wallet initialized and address field derived.');
 
   } catch (error: any) {
-    console.error(`[ERROR] Failed to initialize/assemble Midnight providers or wallet: ${error?.message}`, error);
-    process.exit(1);
+      console.error(`[ERROR] Failed to initialize providers/wallet or derive address field: ${error?.message}`, error);
+      process.exit(1);
   }
 
   // Deploy or Subscribe 
